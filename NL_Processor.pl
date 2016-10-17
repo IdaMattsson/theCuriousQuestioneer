@@ -1,5 +1,6 @@
+% The Curious Questioneer is based off of the natural language processor given in the class example code. 
 % Prolog representation of a grammar to build a query for a database
-%  This is not meant to be polished or lingustically reasonable, but purely to show what can be done
+% This is not meant to be polished or lingustically reasonable, but purely to show what can be done
 
 % This is slightly expanded code of Figures 12.10 and 12.11 in Section 12.6.6 of
 % Poole and Mackworth, Artificial Intelligence: foundations of
@@ -76,6 +77,7 @@ noun([Ind | T],T,Ind,C,C) :- student(Ind).
 reln([enrolled, in | T],T,I1,I2,C,[enrolled_in(I1,I2)|C]).
 reln([passed | T],T,I1,I2,C,[passed(I1,I2)|C]).
 
+
 % Some Example Queries
 % ask noun_phrase([a,computer,science,course],R,Ind,[],C).
 % ask noun_phrase([a,tall,student,enrolled,in,a,computer,science,course],R,Ind,[],C).
@@ -149,6 +151,9 @@ student(sally).
 student(john).
 student(sam).
 student(chris).
+
+% Property triples
+
 
 /* Try the following queries
 | ?- ask([is,john,enrolled,in,cs312],_).

@@ -175,6 +175,27 @@ prop(apples, fruit, true).
 prop(whoever, like, whatever).
 prop(whoever, likes, whatever).
 
+% Auxiliary verbs
+prop(can, aux, true).
+prop(do, aux, true).
+prop(does, aux, true).
+prop(did, aux, true).
+prop(have, aux, true).
+prop(will, aux, true).
+prop(would, aux, true).
+
+
+% Inverse Auxiliary verbs
+prop(can_t, aux, true).
+prop(don_t, aux, true).
+prop(doesn_t, aux, true).
+prop(didn_t, aux, true).
+prop(haven_t, aux, true).
+prop(won_t, aux, true).
+prop(wouldn_t, aux, true).
+
+
+
 
 /* Try the following queries
 | ?- ask([is,john,enrolled,in,cs312],_).

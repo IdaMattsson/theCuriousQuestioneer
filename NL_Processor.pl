@@ -76,10 +76,21 @@ noun([Ind | T],T,Ind,C,C) :- student(Ind).
 reln([enrolled, in | T],T,I1,I2,C,[enrolled_in(I1,I2)|C]).
 reln([passed | T],T,I1,I2,C,[passed(I1,I2)|C]).
 
+% ================= WIP Justin start =======================
+% extract subject
+% subject(T0,T1) is true if T0-T1 is a subject
+subject([X|T], T) :- prop(X, subject, true).
+
+% extract auxiliry verb
+% aux(T0, T1) is true if T0-T1 is a auxiliry verb
+aux([X|T], T) :- prop(X, aux, true).
+
 % relation "like"
 % Assume everyone likes everything in the input
 % reln([like|T], T, _, _, C, [prop(whoever, like, whatever)|C]).
 % reln([likes|T], T, _, _, C, [prop(whoever, likes, whatever)|C]).
+
+% ================= WIP Justin ending =======================
 
 % Some Example Queries
 % ask noun_phrase([a,computer,science,course],R,Ind,[],C).
@@ -113,6 +124,13 @@ prove_all([]).
 prove_all([H|T]) :-
      H,
     prove_all(T).
+
+% ================= WIP Justin start =======================
+
+% S is input sentence and Q is the return answer
+input(S,Q) :- sentence(), produce_all();
+
+% ================= WIP Justin ending =======================
 
 %  The Database of Facts to be Queried
 
@@ -155,11 +173,14 @@ student(john).
 student(sam).
 student(chris).
 
+% ================= WIP Justin start =======================
+
 % Detemine the subjects
 prop(i, subject, true).
 prop(you, subject, true).
 prop(we, subject, true).
 prop(they, subject, true).
+
 
 % Things categorized as fruit
 prop(orange, fruit, true).
@@ -170,6 +191,8 @@ prop(apples, fruit, true).
 % Assume everyone likes everything from the input
 prop(whoever, like, whatever).
 prop(whoever, likes, whatever).
+
+% ================= WIP Justin ending =======================
 
 /* Try the following queries
 | ?- ask([is,john,enrolled,in,cs312],_).

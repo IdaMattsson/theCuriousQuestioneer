@@ -77,12 +77,11 @@ noun([Ind | T],T,Ind,C,C) :- student(Ind).
 reln([enrolled, in | T],T,I1,I2,C,[enrolled_in(I1,I2)|C]).
 reln([passed | T],T,I1,I2,C,[passed(I1,I2)|C]).
 
-=======
+
 % relation "like"
 % Assume everyone likes everything in the input
 % reln([like|T], T, _, _, C, [prop(whoever, like, whatever)|C]).
 % reln([likes|T], T, _, _, C, [prop(whoever, likes, whatever)|C]).
->>>>>>> 50f84a3beaa9d5bac2b21c2484b3f0a45e28bcd4
 
 % Some Example Queries
 % ask noun_phrase([a,computer,science,course],R,Ind,[],C).
@@ -160,7 +159,6 @@ student(chris).
 
 % Property triples
 
-=======
 % Detemine the subjects
 prop(i, subject, true).
 prop(you, subject, true).
@@ -176,7 +174,7 @@ prop(apples, fruit, true).
 % Assume everyone likes everything from the input
 prop(whoever, like, whatever).
 prop(whoever, likes, whatever).
->>>>>>> 50f84a3beaa9d5bac2b21c2484b3f0a45e28bcd4
+
 
 /* Try the following queries
 | ?- ask([is,john,enrolled,in,cs312],_).

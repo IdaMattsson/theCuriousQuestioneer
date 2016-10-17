@@ -1,0 +1,14 @@
+NOTES:
+
+
+readln() will parse an input sentence into a list of words.
+
+
+TODO
+
+1. Add more information to the database
+2. Create rules for the questions, start with tag questions, then move on to more involved examples
+3. Possible in-depth: abstract away from a specific dictionary, but base question generation off of the type of input word. 
+4. Possible in-depth: Add more question structures
+
+

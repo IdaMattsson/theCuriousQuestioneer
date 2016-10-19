@@ -139,9 +139,16 @@ input(S,Q) :- tag_question(S,Q).
 % tag question is one question type.
 tag_question(S, Q) :- tag(S, T), append(S, T, Q).
 
+% tag analyze the first two words in the sentence and produce the tag question.
+% We assume the first word to be the subject and
+% the second word to be either an auxiliry verb or a verb.
 tag([Sub, Aux|_], T) :- prop(Sub, subject, true), prop(Aux, aux, true), prop(Aux, inv_aux, IAux), append([comma, IAux],[Sub, question_mark], T).
+%tag([Sub, Verb|_], T) :- prop(Sub, subject, true), prop(Verb, verb, true), prop(Aux, inv_aux, IAux), append([comma, IAux],[Sub, question_mark], T).
 
 % input(S,Q) :- sentence(), produce_all();
+
+% subject and verb agreement
+%(Sub, Verb, Aux) :- prop();
 
 
 % ================= WIP Justin ending =======================

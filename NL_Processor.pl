@@ -1,5 +1,6 @@
+% The Curious Questioneer is based off of the natural language processor given in the class example code. 
 % Prolog representation of a grammar to build a query for a database
-%  This is not meant to be polished or lingustically reasonable, but purely to show what can be done
+% This is not meant to be polished or lingustically reasonable, but purely to show what can be done
 
 % This is slightly expanded code of Figures 12.10 and 12.11 in Section 12.6.6 of
 % Poole and Mackworth, Artificial Intelligence: foundations of
@@ -76,6 +77,8 @@ noun([Ind | T],T,Ind,C,C) :- student(Ind).
 reln([enrolled, in | T],T,I1,I2,C,[enrolled_in(I1,I2)|C]).
 reln([passed | T],T,I1,I2,C,[passed(I1,I2)|C]).
 
+
+
 % ================= WIP Justin start =======================
 % extract subject
 % subject(T0,T1) is true if T0-T1 is a subject
@@ -84,6 +87,7 @@ subject([X|T], T) :- prop(X, subject, true).
 % extract auxiliry verb
 % aux(T0, T1) is true if T0-T1 is a auxiliry verb
 aux([X|T], T) :- prop(X, aux, true).
+
 
 % relation "like"
 % Assume everyone likes everything in the input
@@ -128,9 +132,13 @@ prove_all([H|T]) :-
 % ================= WIP Justin start =======================
 
 % S is input sentence and Q is the return answer
+
 input(S,Q) :- tagQuestion(S,Q).
 
 tag([Sub, Aux|R], T) :- prop(Sub, subject, true), prop(Aux, auxili)
+
+% input(S,Q) :- sentence(), produce_all();
+
 
 % ================= WIP Justin ending =======================
 
@@ -175,7 +183,11 @@ student(john).
 student(sam).
 student(chris).
 
+
+% Property triples
+
 % ================= WIP Justin start =======================
+
 
 % Detemine the subjects
 prop(i, subject, true).
@@ -194,7 +206,31 @@ prop(apples, fruit, true).
 prop(whoever, like, whatever).
 prop(whoever, likes, whatever).
 
+% Auxiliary verbs
+prop(can, aux, true).
+prop(do, aux, true).
+prop(does, aux, true).
+prop(did, aux, true).
+prop(have, aux, true).
+prop(will, aux, true).
+prop(would, aux, true).
+
+
+% Inverse Auxiliary verbs
+prop(can_t, aux, true).
+prop(don_t, aux, true).
+prop(doesn_t, aux, true).
+prop(didn_t, aux, true).
+prop(haven_t, aux, true).
+prop(won_t, aux, true).
+prop(wouldn_t, aux, true).
+
+
+
+
+
 % ================= WIP Justin ending =======================
+
 
 /* Try the following queries
 | ?- ask([is,john,enrolled,in,cs312],_).

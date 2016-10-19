@@ -133,9 +133,9 @@ prove_all([H|T]) :-
 
 % S is input sentence and Q is the return answer
 
-input(S,Q) :- tagQuestion(S,Q).
+%input(S,Q) :- tagQuestion(S,Q).
 
-tag([Sub, Aux|R], T) :- prop(Sub, subject, true), prop(Aux, auxili)
+%tag([Sub, Aux|R], T) :- prop(Sub, subject, true), prop(Aux, auxili)
 
 % input(S,Q) :- sentence(), produce_all();
 

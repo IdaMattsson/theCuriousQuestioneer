@@ -133,9 +133,13 @@ prove_all([H|T]) :-
 
 % S is input sentence and Q is the return answer
 
-%input(S,Q) :- tagQuestion(S,Q).
+input(S,Q) :- tag_question(S,Q).
 
-%tag([Sub, Aux|R], T) :- prop(Sub, subject, true), prop(Aux, auxili)
+% tag question is true if Q is the sentence S with a tag question added at the end.
+% tag question is one question type.
+tag_question(S, Q) :- tag(S, T), append(S, T, Q).
+
+tag([Sub, Aux|_], T) :- prop(Sub, subject, true), prop(Aux, aux, true), prop(Aux, inv_aux, IAux), append([comma, IAux],[Sub, question_mark], T).
 
 % input(S,Q) :- sentence(), produce_all();
 
@@ -216,7 +220,7 @@ prop(will, aux, true).
 prop(would, aux, true).
 
 
-% Inverse Auxiliary verbs
+% Negative Auxiliary verbs
 prop(can_t, aux, true).
 prop(don_t, aux, true).
 prop(doesn_t, aux, true).
@@ -225,6 +229,21 @@ prop(haven_t, aux, true).
 prop(won_t, aux, true).
 prop(wouldn_t, aux, true).
 
+% Inverse Auxiliary relation
+prop(can, inv_aux, can_t).
+prop(can_t, inv_aux, can).
+prop(do, aux, don_t).
+prop(don_t, inv_aux, do).
+prop(does, inv_aux, doesn_t).
+prop(doesn_t, inv_aux, does).
+prop(did, inv_aux, didn_t).
+prop(didn_t, inv_aux, did).
+prop(have, inv_aux, haven_t).
+prop(haven_t, inv_aux, have).
+prop(will, inv_aux, won_t).
+prop(won_t, inv_aux, will).
+prop(would, inv_aux, wouldn_t).
+prop(wouldn_t, inv_aux, would).
 
 
 

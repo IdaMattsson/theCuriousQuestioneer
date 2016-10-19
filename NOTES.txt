@@ -5,10 +5,11 @@ readln() will parse an input sentence into a list of words.
 
 UPDATED TODO 1:
 
-1. figure out special characters ',' and '?' 
-2. how to handle 'incorrect' input / other forms of input (for example "Can you dance?" "that’s already a question' or something like that 
-3. get rid of assumptions - esp. being able to parse 'I like oranges' -> don’t I? (looking at adding 'hidden auxiliary verb')
-4. tense and subject-verb agreement
+1. figure out special characters ',' and '?' - IDA
+2. how to handle 'incorrect' input / other forms of input (for example "Can you dance?" "that’s already a question' or something like that - JUSTIN
+3. get rid of assumptions - esp. being able to parse 'I like oranges' -> don’t I? - (looking at adding 'hidden auxiliary verb') - JUSTIN, assume that the subject and verb agree.
+3. tense and subject-verb agreement - IDA
+
 3. making sure everything is commented
 
 

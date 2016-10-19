@@ -128,7 +128,9 @@ prove_all([H|T]) :-
 % ================= WIP Justin start =======================
 
 % S is input sentence and Q is the return answer
-input(S,Q) :- sentence(), produce_all();
+input(S,Q) :- tagQuestion(S,Q).
+
+tag([Sub, Aux|R], T) :- prop(Sub, subject, true), prop(Aux, auxili)
 
 % ================= WIP Justin ending =======================
 

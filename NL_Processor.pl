@@ -78,8 +78,6 @@ reln([enrolled, in | T],T,I1,I2,C,[enrolled_in(I1,I2)|C]).
 reln([passed | T],T,I1,I2,C,[passed(I1,I2)|C]).
 
 
-
-% ================= WIP Justin start =======================
 % extract subject
 % subject(T0,T1) is true if T0-T1 is a subject
 subject([X|T], T) :- prop(X, subject, true).
@@ -94,7 +92,6 @@ aux([X|T], T) :- prop(X, aux, true).
 % reln([like|T], T, _, _, C, [prop(whoever, like, whatever)|C]).
 % reln([likes|T], T, _, _, C, [prop(whoever, likes, whatever)|C]).
 
-% ================= WIP Justin ending =======================
 
 % Some Example Queries
 % ask noun_phrase([a,computer,science,course],R,Ind,[],C).
@@ -129,7 +126,7 @@ prove_all([H|T]) :-
      H,
     prove_all(T).
 
-% ================= WIP Justin start =======================
+% ================= WIP =======================
 
 % S is input sentence and Q is the returned question(s)
 
@@ -143,61 +140,14 @@ tag_question(S, Q1) :- tag(S, T1), atomics_to_string(S, " ", S1), string_concat(
 % tag analyze the first two words in the sentence and produce the tag question.
 % We assume the first word to be the subject and
 % the second word to be either an auxiliary verb or a verb.
-tag([Sub, Aux|_], T1) :- prop(Sub, subject, true), prop(Aux, aux, true), prop(Aux, inv_aux, IAux), append([,, IAux], [Sub,?], T), atomics_to_string(T, " ", T1).    % WORKED HERE
+tag([Sub, Aux|_], T1) :- prop(Sub, subject, true), prop(Aux, aux, true), prop(Aux, inv_aux, IAux), append([,, IAux], [Sub,?], T), atomics_to_string(T, " ", T1).
+%Maybe simplify for testing, and then add the final output form after??
 
 % input(S,Q) :- sentence(), produce_all();
 
 % subject and verb agreement
 %(Sub, Verb, Aux) :- prop();
 
-
-% ================= WIP Justin ending =======================
-
-%  The Database of Facts to be Queried
-
-% course(C) is true if C is a course
-course(cs312).
-course(cs322).
-course(math315).
-
-dept(cs312,comp_sci).
-dept(cs322,comp_sci).
-dept(math315,math).
-
-enrolled_in(john,cs312).
-enrolled_in(mary,cs312).
-enrolled_in(jane,math315).
-enrolled_in(sally,cs322).
-enrolled_in(sam,math315).
-
-passed(S,C):-
-    grade(S,C,G),
-    G >= 50.
-
-grade(sam,cs312,93).
-grade(chris,cs312,82).
-
-female(mary).
-female(jane).
-female(sally).
-male(john).
-
-tall(mary).
-tall(jane).
-tall(john).
-tall(jordan).
-
-student(mary).
-student(jane).
-student(sally).
-student(john).
-student(sam).
-student(chris).
-
-
-% Property triples
-
-% ================= WIP Justin start =======================
 
 
 % Detemine the subjects
@@ -251,10 +201,5 @@ prop(will, inv_aux, won_t).
 prop(won_t, inv_aux, will).
 prop(would, inv_aux, wouldn_t).
 prop(wouldn_t, inv_aux, would).
-
-
-
-
-% ================= WIP Justin ending =======================
 
 

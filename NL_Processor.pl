@@ -131,19 +131,19 @@ prove_all([H|T]) :-
 
 % ================= WIP Justin start =======================
 
-% S is input sentence and Q is the return answer
+% S is input sentence and Q is the returned question(s)
 
-input(S,Q) :- tag_question(S,Q).
+input(S) :- tag_question(S,Q1), write(Q1).
 
 % tag question is true if Q is the sentence S with a tag question added at the end.
 % tag question is one question type.
-tag_question(S, Q) :- tag(S, T), append(S, T, Q).
+
+tag_question(S, Q1) :- tag(S, T1), atomics_to_string(S, " ", S1), string_concat(S1, T1, Q1).
 
 % tag analyze the first two words in the sentence and produce the tag question.
 % We assume the first word to be the subject and
-% the second word to be either an auxiliry verb or a verb.
-tag([Sub, Aux|_], T) :- prop(Sub, subject, true), prop(Aux, aux, true), prop(Aux, inv_aux, IAux), append([comma, IAux],[Sub, question_mark], T).
-%tag([Sub, Verb|_], T) :- prop(Sub, subject, true), prop(Verb, verb, true), prop(Aux, inv_aux, IAux), append([comma, IAux],[Sub, question_mark], T).
+% the second word to be either an auxiliary verb or a verb.
+tag([Sub, Aux|_], T1) :- prop(Sub, subject, true), prop(Aux, aux, true), prop(Aux, inv_aux, IAux), append([,, IAux], [Sub,?], T), atomics_to_string(T, " ", T1).    % WORKED HERE
 
 % input(S,Q) :- sentence(), produce_all();
 
@@ -258,16 +258,3 @@ prop(wouldn_t, inv_aux, would).
 % ================= WIP Justin ending =======================
 
 
-/* Try the following queries
-| ?- ask([is,john,enrolled,in,cs312],_).
-| ?- ask([who,is,a,student],A).
-| ?- ask([who,is,tall],A).
-| ?- ask([is,john,enrolled,in,a,computer,science,course],_).
-| ?- ask([who,is,enrolled,in,a,computer,science,course],A).
-| ?- ask([who,is,a,tall,student,enrolled,in,a,computer,science,course],A).
-| ?- ask([what,student,is,enrolled,in,a,computer,science,course],A).
-| ?- ask([what,student,passed,a,computer,science,course],A).
-| ?- ask([what,student,enrolled,in,a,math,course,passed,a,computer,science,course],A).
-| ?- ask([what,student,passed,a,computer,science,course,enrolled,in,a,math,course],A).
-| ?- ask([what,student,passed,cs312],A).
-*/

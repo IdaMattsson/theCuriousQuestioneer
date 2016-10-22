@@ -145,25 +145,37 @@ check_incorrect([A|_]) :- prop(A, subject, false).
 tag_question(S, Q1) :- tag(S, T1), atomics_to_string(S, " ", S1), string_concat(S1, T1, Q1).
 
 % tag analyze the first two words in the sentence and produce the tag question.
+
 % We assume the first word to be the subject and
 % the second word to be either an auxiliary verb or a verb.
-tag([Sub, Aux|_], T1) :- prop(Sub, subject, true), prop(Aux, aux, true), prop(Aux, inv_aux, IAux), append([,, IAux], [Sub,?], T), atomics_to_string(T, " ", T1).
+tag([Sub, Aux|_], T1) :- prop(Sub, subject, _), prop(Aux, aux, true), prop(Aux, inv_aux, IAux), append([,, IAux], [Sub,?], T), atomics_to_string(T, " ", T1).
+
+tag([Sub, Verb|_], T1) :- prop(Sub, subject, ST), prop(Verb, verb, VT), svagree(ST,VT), prop(VT, findaux, IAux), append([,, IAux], [Sub,?], T), atomics_to_string(T, " ", T1).
+
 
 % input(S,Q) :- sentence(), produce_all();
 
-% subject and verb agreement
-%(Sub, Verb, Aux) :- prop();
+
+% check if type of subject and verb match
+% (This greatly reduce the amount of data in the database we need to input)
+% svagree(ST, VT)
+% ST is subject type
+% VT is verb type
+svagree(fstsnd,fstsnd).
+svagree(fstsnd,past).
+svagree(third,third).
+svagree(third,past).
 
 % ======== DATABASE =========
 
-% Detemine the subjects
-prop(i, subject, true).
-prop(you, subject, true).
-prop(he, subject, true).
-prop(she, subject, true).
-prop(it, subject, true).
-prop(we, subject, true).
-prop(they, subject, true).
+% Detemine the subjects and what kind of subjects (First+second or third person)
+prop(i, subject, fstsnd).
+prop(you, subject, fstsnd).
+prop(he, subject, third).
+prop(she, subject, third).
+prop(it, subject, third).
+prop(we, subject, fstsnd).
+prop(they, subject, fstsnd).
 
 
 % Things categorized as fruit
@@ -172,9 +184,18 @@ prop(oranges, fruit, true).
 prop(apple, fruit, true).
 prop(apples, fruit, true).
 
-% Assume everyone likes everything from the input
-prop(whoever, like, whatever).
-prop(whoever, likes, whatever).
+% Detemine the verbs and what kind of verbs (First+second or third person or past tense)
+prop(like, verb, fstsnd).
+prop(make, verb, fstsnd).
+prop(love, verb, fstsnd).
+
+prop(likes, verb, third).
+prop(makes, verb, third).
+prop(loves, verb, third).
+
+prop(liked, verb,past).
+prop(made, verb, past).
+prop(loved, verb, past).
 
 % Auxiliary verbs
 prop(can, aux, true).
@@ -224,70 +245,78 @@ prop(i, inv_q_w, you).
 prop(you, inv_q_w, i).
 
 % Subject Aux_Verb agreement
-prop(i, sv_a, can).
-prop(i, sv_a, can_t).
-prop(i, sv_a, do).
-prop(i, sv_a, don_t).
-prop(i, sv_a, have).
-prop(i, sv_a, haven_t).
-prop(i, sv_a, had).
-prop(i, sv_a, hadn_t).
-prop(i, sv_a, will).
-prop(i, sv_a, won_t).
-prop(i, sv_a, would).
-prop(i, sv_a, wouldn_t).
+prop(i, sav_a, can).
+prop(i, sav_a, can_t).
+prop(i, sav_a, do).
+prop(i, sav_a, don_t).
+prop(i, sav_a, have).
+prop(i, sav_a, haven_t).
+prop(i, sav_a, had).
+prop(i, sav_a, hadn_t).
+prop(i, sav_a, will).
+prop(i, sav_a, won_t).
+prop(i, sav_a, would).
+prop(i, sav_a, wouldn_t).
 
-prop(you, sv_a, can).
-prop(you, sv_a, can_t).
-prop(you, sv_a, do).
-prop(you, sv_a, don_t).
-prop(you, sv_a, have).
-prop(you, sv_a, haven_t).
-prop(you, sv_a, had).
-prop(you, sv_a, hadn_t).
-prop(you, sv_a, will).
-prop(you, sv_a, won_t).
-prop(you, sv_a, would).
-prop(you, sv_a, wouldn_t).
+prop(you, sav_a, can).
+prop(you, sav_a, can_t).
+prop(you, sav_a, do).
+prop(you, sav_a, don_t).
+prop(you, sav_a, have).
+prop(you, sav_a, haven_t).
+prop(you, sav_a, had).
+prop(you, sav_a, hadn_t).
+prop(you, sav_a, will).
+prop(you, sav_a, won_t).
+prop(you, sav_a, would).
+prop(you, sav_a, wouldn_t).
 
-prop(he, sv_a, can).
-prop(he, sv_a, can_t).
-prop(he, sv_a, does).
-prop(he, sv_a, doesn_t).
-prop(he, sv_a, has).
-prop(he, sv_a, hasn_t).
-prop(he, sv_a, had).
-prop(he, sv_a, hadn_t).
-prop(he, sv_a, will).
-prop(he, sv_a, won_t).
-prop(he, sv_a, would).
-prop(he, sv_a, wouldn_t).
+prop(he, sav_a, can).
+prop(he, sav_a, can_t).
+prop(he, sav_a, does).
+prop(he, sav_a, doesn_t).
+prop(he, sav_a, has).
+prop(he, sav_a, hasn_t).
+prop(he, sav_a, had).
+prop(he, sav_a, hadn_t).
+prop(he, sav_a, will).
+prop(he, sav_a, won_t).
+prop(he, sav_a, would).
+prop(he, sav_a, wouldn_t).
 
-prop(she, sv_a, can).
-prop(she, sv_a, can_t).
-prop(she, sv_a, does).
-prop(she, sv_a, doesn_t).
-prop(she, sv_a, has).
-prop(she, sv_a, hasn_t).
-prop(she, sv_a, had).
-prop(she, sv_a, hadn_t).
-prop(she, sv_a, will).
-prop(she, sv_a, won_t).
-prop(she, sv_a, would).
-prop(she, sv_a, wouldn_t).
+prop(she, sav_a, can).
+prop(she, sav_a, can_t).
+prop(she, sav_a, does).
+prop(she, sav_a, doesn_t).
+prop(she, sav_a, has).
+prop(she, sav_a, hasn_t).
+prop(she, sav_a, had).
+prop(she, sav_a, hadn_t).
+prop(she, sav_a, will).
+prop(she, sav_a, won_t).
+prop(she, sav_a, would).
+prop(she, sav_a, wouldn_t).
 
-prop(it, sv_a, can).
-prop(it, sv_a, can_t).
-prop(it, sv_a, does).
-prop(it, sv_a, doesn_t).
-prop(it, sv_a, has).
-prop(it, sv_a, hasn_t).
-prop(it, sv_a, had).
-prop(it, sv_a, hadn_t).
-prop(it, sv_a, will).
-prop(it, sv_a, won_t).
-prop(it, sv_a, would).
-prop(it, sv_a, wouldn_t).
+prop(it, sav_a, can).
+prop(it, sav_a, can_t).
+prop(it, sav_a, does).
+prop(it, sav_a, doesn_t).
+prop(it, sav_a, has).
+prop(it, sav_a, hasn_t).
+prop(it, sav_a, had).
+prop(it, sav_a, hadn_t).
+prop(it, sav_a, will).
+prop(it, sav_a, won_t).
+prop(it, sav_a, would).
+prop(it, sav_a, wouldn_t).
+
+% use verb type to find auxiliry verb
+% this finds hidden auxiliry verb
+% prop(Verb Type, findaux, inverse auxiliry verb)
+prop(fstsnd, findaux, don_t).
+prop(third, findaux, doesn_t).
+prop(past, findaux, didn_t).
+
 
 
 

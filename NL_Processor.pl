@@ -19,12 +19,91 @@
 %        the relations in C4-C0 give the constraints on Ind implied by the noun phrase
 % A noun phrase is a determiner followed by adjectives followed
 % by a noun followed by an optional modifying phrase:
-noun_phrase(T0,T4,Ind,C0,C4) :-
-    det(T0,T1,Ind,C0,C1),
-    adjectives(T1,T2,Ind,C1,C2),
-    noun(T2,T3,Ind,C2,C3),
-    mp(T3,T4,Ind,C3,C4).
 
+
+% ================= WIP =======================
+
+
+% S is input sentence and Q is the returned question(s)
+% this version is good for keeping only the basic shape, no variable assignment. Use for final version
+%input(S) :- tag_question(S,Q1), write(Q1).
+
+% working version, expand according to number of avilable questions
+input(S, T) :- tag_question(S, T).
+
+
+/* Question Types */
+
+% tag question is true if Q is the sentence S with a tag question added at the end.
+
+% tag_question(S, Q1) :- tag(S, T1), atomics_to_string(S, " ", S1), string_concat(S1, T1, Q1).
+tag_question(S, Q1) :- tag(S, T), append(S, T, Q1).
+tag_question(S, Q1) :- \+ tag(S, _), error(Q1).
+
+error([the, curious, questioneer, is, confused]).
+
+% tag analyze the first two words in the sentence and produce the tag question.
+
+% We assume the first word to be the subject and
+% the second word to be either an auxiliary verb or a verb.
+% NOTE: add the atomics_to_string!!! TODO
+tag([Sub, Aux, Verb|_], T1) :- prop(Sub, subject, ST), prop(Aux, aux, AT), prop(Verb, verb, VT), sva_agree(ST, AT, VT), prop(Aux, inv_aux, IAux), append([,, IAux], [Sub,?], T1).
+
+tag([Sub, Verb|_], T1) :- prop(Sub, subject, ST), prop(Verb, verb, VT), sva_agree(ST, n, VT), prop(VT, findaux, IAux), append([,, IAux], [Sub,?], T1).
+
+
+
+/* Grammar */
+
+% sav_agree(ST, AT, VT) is true if the auxiliary verb agrees with the subject and the verb agrees with the aux (that the verb is a root verb)
+% if AT is n, there is no auxuliary verb in the input
+sva_agree(s_fs, n, root_v).      % subject_firstSingular maps to root verb
+sva_agree(s_fs, n, past).
+sva_agree(s_ss, n, root_v).
+sva_agree(s_ss, n, past).
+sva_agree(s_sp, n, root_v).
+sva_agree(s_ts, n, root_v_s).    % subject_third singular maps to root verb with added s
+sva_agree(s_ts, n, past).
+sva_agree(s_fp, n, root_v).
+sva_agree(s_fp, n, past).
+sva_agree(s_tp, n, root_v).
+sva_agree(s_tp, n, past).
+
+sva_agree(s_fs, true, root_v).      % subject_firstSingular maps to root verb
+sva_agree(s_ss, true, root_v).
+sva_agree(s_sp, true, root_v).
+sva_agree(s_ts, a_ts, root_v).    % subject_third singular maps to root verb with added s
+sva_agree(s_fp, true, root_v).
+sva_agree(s_tp, true, root_v).
+
+
+
+% check if type of subject and verb match
+% (This greatly reduce the amount of data in the database we need to input)
+% sv_agree(ST, VT)
+% ST is subject type
+% VT is verb type
+/*
+sv_agree(fst_snd,fst_snd).
+sv_agree(fst_snd,past).
+sv_agree(t_rd,t_rd).
+sv_agree(t_rd,past).
+*/
+
+
+
+% use verb type to find auxiliry verb
+% this finds hidden auxiliry verb
+% prop(Verb Type, findaux, inverse auxiliry verb)
+prop(root_v, findaux, don_t).
+prop(root_v_s, findaux, doesn_t).
+prop(past, findaux, didn_t).
+/*
+noun_phrase(T0,T4,Ind,C0,C4) :-
+det(T0,T1,Ind,C0,C1),
+adjectives(T1,T2,Ind,C1,C2),
+noun(T2,T3,Ind,C2,C3),
+mp(T3,T4,Ind,C3,C4).
 
 % Determiners (articles) are ignored in this oversimplified example.
 % They do not provide any extra constaints.
@@ -35,43 +114,9 @@ det(T,T,_,C,C).
 % Adjectives consist of a sequence of adjectives.
 % The meaning of the arguments is the same as for noun_phrase
 adjectives(T0,T2,Ind,C0,C2) :-
-    adj(T0,T1,Ind,C0,C1),
-    adjectives(T1,T2,Ind,C1,C2).
+adj(T0,T1,Ind,C0,C1),
+adjectives(T1,T2,Ind,C1,C2).
 adjectives(T,T,_,C,C).
-
-% An optional modifying phrase / relative clause is either
-% a relation (verb or preposition) followed by a noun_phrase or
-% 'that' followed by a relation then a noun_phrase or
-% nothing 
-mp(T0,T2,I1,C0,C2) :-
-    reln(T0,T1,I1,I2,C0,C1),
-    noun_phrase(T1,T2,I2,C1,C2).
-mp([that|T0],T2,I1,C0,C2) :-
-    reln(T0,T1,I1,I2,C0,C1),
-    noun_phrase(T1,T2,I2,C1,C2).
-mp(T,T,_,C,C).
-
-% DICTIONARY
-
-% adj(T0,T1,Ind,C0,C1) is true if T0-T1 is an adjective that provides properties C1-C0 to Ind
-adj([computer, science | T],T,Ind,C,[dept(Ind,comp_sci)|C]).
-adj([math | T],T,Ind,C,[dept(Ind,math)|C]).
-adj([female | T],T,Ind,C,[female(Ind)|C]).
-adj([male | T],T,Ind,C,[male(Ind)|C]).
-adj([tall | T],T,Ind,C,[tall(Ind)|C]).
-
-% noun(T0,T1,Ind,C0,C1) is true if T0-T1 is a noun that provides properties C1-C0 to Ind
-noun([course | T],T,Ind,C,[course(Ind)|C]).
-noun([student | T],T,Ind,C,[student(Ind)|C]).
-noun([building | T],T,Ind,R,[building(Ind)|R]).
-% The following are for proper nouns:
-noun([Ind | T],T,Ind,C,C) :- course(Ind).
-noun([Ind | T],T,Ind,C,C) :- student(Ind).
-
-% reln(T0,T1,I1,I2,R0,R1) is true if T0-T1 is a relation
-%   that provides relations R1-R0 on individuals I1 and I2
-reln([enrolled, in | T],T,I1,I2,C,[enrolled_in(I1,I2)|C]).
-reln([passed | T],T,I1,I2,C,[passed(I1,I2)|C]).
 
 
 % extract subject from sentence (assumes the first subject )
@@ -79,103 +124,53 @@ reln([passed | T],T,I1,I2,C,[passed(I1,I2)|C]).
 subject([X|_], X) :- prop(X, subject, true).
 subject([_, Y|R], S) :- subject([Y|R], S).
 
+
 % extract auxiliry verb from the sentence
 % aux(T0, T1) is true if T0-T1 is a auxiliary verb
 aux([X|_], X) :- prop(X, aux, true).
 aux([_, Y|R], A) :- aux([Y|R], A).
-
+*/
 
 % relation "like"
 % Assume everyone likes everything in the input
 % reln([like|T], T, _, _, C, [prop(whoever, like, whatever)|C]).
 % reln([likes|T], T, _, _, C, [prop(whoever, likes, whatever)|C]).
 
+/*
 
 % question(Question,QR,Indect,Q0,Query) is true if Query-Q0 provides an answer about Indect to Question-QR
 question([is | T0],T2,Ind,C0,C2) :-
-    noun_phrase(T0,T1,Ind,C0,C1),
-    mp(T1,T2,Ind,C1,C2).
+noun_phrase(T0,T1,Ind,C0,C1),
+mp(T1,T2,Ind,C1,C2).
 question([who,is | T0],T1,Ind,C0,C1) :-
-    mp(T0,T1,Ind,C0,C1).
+mp(T0,T1,Ind,C0,C1).
 question([who,is | T0],T1,Ind,C0,C1) :-
-    noun_phrase(T0,T1,Ind,C0,C1).
+noun_phrase(T0,T1,Ind,C0,C1).
 question([who,is | T0],T1,Ind,C0,C1) :-
-    adjectives(T0,T1,Ind,C0,C1).
+adjectives(T0,T1,Ind,C0,C1).
 question([what | T0],T2,Ind,C0,C2) :-      % allows for a "what ... is ..."
-    noun_phrase(T0,[is|T1],Ind,C0,C1),
-    mp(T1,T2,Ind,C1,C2).
+noun_phrase(T0,[is|T1],Ind,C0,C1),
+mp(T1,T2,Ind,C1,C2).
 question([what | T0],T2,Ind,C0,C2) :-
-    noun_phrase(T0,T1,Ind,C0,C1),
-    mp(T1,T2,Ind,C1,C2).
+noun_phrase(T0,T1,Ind,C0,C1),
+mp(T1,T2,Ind,C1,C2).
 
-
-% ask(Q,A) gives answer A to question Q
-ask(Q,A) :-
-    question(Q,[],A,[],C),
-    prove_all(C).
-
-% prove_all(L) proves all elements of L against the database
-prove_all([]).
-prove_all([H|T]) :-
-     H,
-    prove_all(T).
-
-% ================= WIP =======================
-
-% master function
-% generate(Q) returns true if the
-
-% S is input sentence and Q is the returned question(s)
-
-% this version is good for keeping only the basic shape, no variable assignment. Use for final version
-%input(S) :- tag_question(S,Q1), write(Q1).
-% working version, expand according to number of avilable questions
-%input(S, T) :- \+ check_incorrect(S), tag_question(S, T). assumes the first element is the subject.
-input(S, T) :- tag_question(S, T).
-
-
-/* Question Types */
-
-% check_incorrect returns true if the first element of the input is not a subject. Expand on this later.
-check_incorrect([A|_]) :- prop(A, subject, false).
-
-% tag question is true if Q is the sentence S with a tag question added at the end.
-% tag question is one question type.
-
-tag_question(S, Q1) :- tag(S, T1), atomics_to_string(S, " ", S1), string_concat(S1, T1, Q1).
-
-% tag analyze the first two words in the sentence and produce the tag question.
-
-% We assume the first word to be the subject and
-% the second word to be either an auxiliary verb or a verb.
-tag([Sub, Aux|_], T1) :- prop(Sub, subject, _), prop(Aux, aux, true), prop(Aux, inv_aux, IAux), append([,, IAux], [Sub,?], T), atomics_to_string(T, " ", T1).
-
-tag([Sub, Verb|_], T1) :- prop(Sub, subject, ST), prop(Verb, verb, VT), svagree(ST,VT), prop(VT, findaux, IAux), append([,, IAux], [Sub,?], T), atomics_to_string(T, " ", T1).
-
-
-% input(S,Q) :- sentence(), produce_all();
-
-
-% check if type of subject and verb match
-% (This greatly reduce the amount of data in the database we need to input)
-% svagree(ST, VT)
-% ST is subject type
-% VT is verb type
-svagree(fstsnd,fstsnd).
-svagree(fstsnd,past).
-svagree(third,third).
-svagree(third,past).
+*/
 
 % ======== DATABASE =========
 
 % Detemine the subjects and what kind of subjects (First+second or third person)
-prop(i, subject, fstsnd).
-prop(you, subject, fstsnd).
-prop(he, subject, third).
-prop(she, subject, third).
-prop(it, subject, third).
-prop(we, subject, fstsnd).
-prop(they, subject, fstsnd).
+% The form of the auxiliary verb does not change between first and second person, so they are treated as the same.
+
+
+prop(i, subject, s_fs).           % I do
+prop(you, subject, s_ss).         % you do
+prop(he, subject, s_ts).          % he does
+prop(she, subject, s_ts).         % she does
+prop(it, subject, s_ts).          % it does
+prop(we, subject, s_fp).           % we do
+prop(you, subject, s_sp).          % you do
+prop(they, subject, s_tp).         % they do
 
 
 % Things categorized as fruit
@@ -185,13 +180,13 @@ prop(apple, fruit, true).
 prop(apples, fruit, true).
 
 % Detemine the verbs and what kind of verbs (First+second or third person or past tense)
-prop(like, verb, fstsnd).
-prop(make, verb, fstsnd).
-prop(love, verb, fstsnd).
+prop(like, verb, root_v).
+prop(make, verb, root_v).
+prop(love, verb, root_v).
 
-prop(likes, verb, third).
-prop(makes, verb, third).
-prop(loves, verb, third).
+prop(likes, verb, root_v_s).
+prop(makes, verb, root_v_s).
+prop(loves, verb, root_v_s).
 
 prop(liked, verb,past).
 prop(made, verb, past).
@@ -200,11 +195,11 @@ prop(loved, verb, past).
 % Auxiliary verbs
 prop(can, aux, true).
 prop(do, aux, true).
-prop(does, aux, true).
+prop(does, aux, a_ts).
 prop(did, aux, true).
 prop(have, aux, true).
 prop(had, aux, true).
-prop(has, aux, true).
+prop(has, aux, a_ts).
 prop(will, aux, true).
 prop(would, aux, true).
 
@@ -212,11 +207,11 @@ prop(would, aux, true).
 % Negative Auxiliary verbs
 prop(can_t, aux, true).
 prop(don_t, aux, true).
-prop(doesn_t, aux, true).
+prop(doesn_t, aux, a_ts).
 prop(didn_t, aux, true).
 prop(haven_t, aux, true).
 prop(hadn_t, aux, true).
-prop(hasn_t, aux, true).
+prop(hasn_t, aux, a_ts).
 prop(won_t, aux, true).
 prop(wouldn_t, aux, true).
 
@@ -310,12 +305,6 @@ prop(it, sav_a, won_t).
 prop(it, sav_a, would).
 prop(it, sav_a, wouldn_t).
 
-% use verb type to find auxiliry verb
-% this finds hidden auxiliry verb
-% prop(Verb Type, findaux, inverse auxiliry verb)
-prop(fstsnd, findaux, don_t).
-prop(third, findaux, doesn_t).
-prop(past, findaux, didn_t).
 
 
 

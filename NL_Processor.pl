@@ -47,9 +47,11 @@ error([the, curious, questioneer, is, confused]).
 % We assume the first word to be the subject and
 % the second word to be either an auxiliary verb or a verb.
 % NOTE: add the atomics_to_string!!! TODO
-tag([Sub, Aux, Verb|_], T1) :- prop(Sub, subject, ST), prop(Aux, aux, AT), prop(Verb, verb, VT), sva_agree(ST, AT, VT), prop(Aux, inv_aux, IAux), append([,, IAux], [Sub,?], T1).
+tag([Sub, Aux, Verb|_], T1) :- prop(Sub, subject, ST), prop(Aux, aux, AT), prop(Verb, verb, VT), sav_agree(ST, AT, VT), prop(Aux, inv_aux, IAux), append([,, IAux], [Sub,?], T1).
 
-tag([Sub, Verb|_], T1) :- prop(Sub, subject, ST), prop(Verb, verb, VT), sva_agree(ST, n, VT), prop(VT, findaux, IAux), append([,, IAux], [Sub,?], T1).
+tag([Sub, Verb|_], T1) :- prop(Sub, subject, ST), prop(Verb, verb, VT), sav_agree(ST, n, VT), prop(VT, find_aux, IAux), append([,, IAux], [Sub,?], T1).
+
+tag([Sub, Verb_tb, Verb_ing|_], T1) :- prop(Sub, subject, ST), prop(Verb_tb, verb_tb, VT), prop(Verb_ing, verb_ing, true), sav_agree(ST, n, VT), prop(Verb_tb, inv_be, IVerb_tb), append([,, IVerb_tb], [Sub,?], T1).
 
 
 
@@ -57,24 +59,42 @@ tag([Sub, Verb|_], T1) :- prop(Sub, subject, ST), prop(Verb, verb, VT), sva_agre
 
 % sav_agree(ST, AT, VT) is true if the auxiliary verb agrees with the subject and the verb agrees with the aux (that the verb is a root verb)
 % if AT is n, there is no auxuliary verb in the input
-sva_agree(s_fs, n, root_v).      % subject_firstSingular maps to root verb
-sva_agree(s_fs, n, past).
-sva_agree(s_ss, n, root_v).
-sva_agree(s_ss, n, past).
-sva_agree(s_sp, n, root_v).
-sva_agree(s_ts, n, root_v_s).    % subject_third singular maps to root verb with added s
-sva_agree(s_ts, n, past).
-sva_agree(s_fp, n, root_v).
-sva_agree(s_fp, n, past).
-sva_agree(s_tp, n, root_v).
-sva_agree(s_tp, n, past).
 
-sva_agree(s_fs, true, root_v).      % subject_firstSingular maps to root verb
-sva_agree(s_ss, true, root_v).
-sva_agree(s_sp, true, root_v).
-sva_agree(s_ts, a_ts, root_v).    % subject_third singular maps to root verb with added s
-sva_agree(s_fp, true, root_v).
-sva_agree(s_tp, true, root_v).
+%for subject with verb only
+sav_agree(s_fs, n, root_v).         % subject_firstSingular maps to root verb
+sav_agree(s_fs, n, past).
+sav_agree(s_ss, n, root_v).
+sav_agree(s_ss, n, past).
+sav_agree(s_ts, n, root_v_s).       % subject_third singular maps to root verb with added s
+sav_agree(s_ts, n, past).
+sav_agree(s_fp, n, root_v).
+sav_agree(s_fp, n, past).
+sav_agree(s_sp, n, root_v).
+sav_agree(s_sp, n, past).
+sav_agree(s_tp, n, root_v).
+sav_agree(s_tp, n, past).
+
+% for subject, aux, verb
+sav_agree(s_fs, true, root_v).
+sav_agree(s_ss, true, root_v).
+sav_agree(s_sp, true, root_v).
+sav_agree(s_ts, a_ts, root_v).
+sav_agree(s_fp, true, root_v).
+sav_agree(s_tp, true, root_v).
+
+% for subject, verb 'be'
+sav_agree(s_fs, n, vb_fs_pr).
+sav_agree(s_fs, n, vb_fs_pa).
+sav_agree(s_ss, n, vb_ss_pr).
+sav_agree(s_ss, n, vb_ss_pa).
+sav_agree(s_ts, n, vb_ts_pr).
+sav_agree(s_ts, n, vb_ts_pa).
+sav_agree(s_fp, n, vb_fp_pr).
+sav_agree(s_fp, n, vb_fp_pa).
+sav_agree(s_sp, n, vb_sp_pr).
+sav_agree(s_sp, n, vb_sp_pa).
+sav_agree(s_tp, n, vb_tp_pr).
+sav_agree(s_tp, n, vb_tp_pa).
 
 
 
@@ -94,10 +114,12 @@ sv_agree(t_rd,past).
 
 % use verb type to find auxiliry verb
 % this finds hidden auxiliry verb
-% prop(Verb Type, findaux, inverse auxiliry verb)
-prop(root_v, findaux, don_t).
-prop(root_v_s, findaux, doesn_t).
-prop(past, findaux, didn_t).
+% prop(Verb Type, find_aux, inverse auxiliry verb)
+prop(root_v, find_aux, don_t).
+prop(root_v_s, find_aux, doesn_t).
+prop(past, find_aux, didn_t).
+
+
 /*
 noun_phrase(T0,T4,Ind,C0,C4) :-
 det(T0,T1,Ind,C0,C1),
@@ -180,17 +202,56 @@ prop(apple, fruit, true).
 prop(apples, fruit, true).
 
 % Detemine the verbs and what kind of verbs (First+second or third person or past tense)
+
 prop(like, verb, root_v).
 prop(make, verb, root_v).
 prop(love, verb, root_v).
+prop(dance, verb, root_v).
 
 prop(likes, verb, root_v_s).
 prop(makes, verb, root_v_s).
 prop(loves, verb, root_v_s).
+prop(dances, verb, root_v_s).
 
-prop(liked, verb,past).
+prop(liked, verb, past).
 prop(made, verb, past).
 prop(loved, verb, past).
+prop(danced, verb, past).
+
+%liking and loving are not gramatically correct, but colloquially used
+prop(liking, verb_ing, true).
+prop(making, verb_ing, true).
+prop(loving, verb_ing, true).
+prop(dancing, verb_ing, true).
+prop(making, verb_ing, true).
+
+prop(am, verb_tb, vb_fs_pr).
+prop(are, verb_tb, vb_ss_pr).
+prop(is, verb_tb, vb_ts_pr).
+prop(are, verb_tb, vb_fp_pr).
+prop(are, verb_tb, vb_sp_pr).
+prop(are, verb_tb, vb_tp_pr).
+
+prop(was, verb_tb, vb_fs_pa).
+prop(were, verb_tb, vb_ss_pa).
+prop(was, verb_tb, vb_ts_pa).
+prop(were, verb_tb, vb_fp_pa).
+prop(were, verb_tb, vb_sp_pa).
+prop(were, verb_tb, vb_tp_pa).
+
+prop(ain_t, verb_tb, vb_fs_pr).
+prop(aren_t, verb_tb, vb_ss_pr).
+prop(isn_t, verb_tb, vb_ts_pr).
+prop(aren_t, verb_tb, vb_fp_pr).
+prop(aren_t, verb_tb, vb_sp_pr).
+prop(aren_t, verb_tb, vb_tp_pr).
+
+prop(wasn_t, verb_tb, vb_fs_pa).
+prop(weren_t, verb_tb, vb_ss_pa).
+prop(wasn_t, verb_tb, vb_ts_pa).
+prop(wasn_t, verb_tb, vb_fp_pa).
+prop(wasn_t, verb_tb, vb_sp_pa).
+prop(wasn_t, verb_tb, vb_tp_pa).
 
 % Auxiliary verbs
 prop(can, aux, true).
@@ -202,7 +263,6 @@ prop(had, aux, true).
 prop(has, aux, a_ts).
 prop(will, aux, true).
 prop(would, aux, true).
-
 
 % Negative Auxiliary verbs
 prop(can_t, aux, true).
@@ -235,78 +295,22 @@ prop(won_t, inv_aux, will).
 prop(would, inv_aux, wouldn_t).
 prop(wouldn_t, inv_aux, would).
 
+% Inverse "be" verbs
+prop(am, inv_be, ain_t).
+prop(ain_t, inv_be, am).
+prop(are, inv_be, aren_t).
+prop(aren_t, inv_be, aren_t).
+prop(is, inv_be, isn_t).
+prop(isn_t, inv_be, is).
+
+prop(was, inv_be, wasn_t).
+prop(wasn_t, inv_be, was).
+prop(were, inv_be, weren_t).
+prop(weren_t, inv_be, were).
+
+
 % Inverse Question Words
 prop(i, inv_q_w, you).
 prop(you, inv_q_w, i).
-
-% Subject Aux_Verb agreement
-prop(i, sav_a, can).
-prop(i, sav_a, can_t).
-prop(i, sav_a, do).
-prop(i, sav_a, don_t).
-prop(i, sav_a, have).
-prop(i, sav_a, haven_t).
-prop(i, sav_a, had).
-prop(i, sav_a, hadn_t).
-prop(i, sav_a, will).
-prop(i, sav_a, won_t).
-prop(i, sav_a, would).
-prop(i, sav_a, wouldn_t).
-
-prop(you, sav_a, can).
-prop(you, sav_a, can_t).
-prop(you, sav_a, do).
-prop(you, sav_a, don_t).
-prop(you, sav_a, have).
-prop(you, sav_a, haven_t).
-prop(you, sav_a, had).
-prop(you, sav_a, hadn_t).
-prop(you, sav_a, will).
-prop(you, sav_a, won_t).
-prop(you, sav_a, would).
-prop(you, sav_a, wouldn_t).
-
-prop(he, sav_a, can).
-prop(he, sav_a, can_t).
-prop(he, sav_a, does).
-prop(he, sav_a, doesn_t).
-prop(he, sav_a, has).
-prop(he, sav_a, hasn_t).
-prop(he, sav_a, had).
-prop(he, sav_a, hadn_t).
-prop(he, sav_a, will).
-prop(he, sav_a, won_t).
-prop(he, sav_a, would).
-prop(he, sav_a, wouldn_t).
-
-prop(she, sav_a, can).
-prop(she, sav_a, can_t).
-prop(she, sav_a, does).
-prop(she, sav_a, doesn_t).
-prop(she, sav_a, has).
-prop(she, sav_a, hasn_t).
-prop(she, sav_a, had).
-prop(she, sav_a, hadn_t).
-prop(she, sav_a, will).
-prop(she, sav_a, won_t).
-prop(she, sav_a, would).
-prop(she, sav_a, wouldn_t).
-
-prop(it, sav_a, can).
-prop(it, sav_a, can_t).
-prop(it, sav_a, does).
-prop(it, sav_a, doesn_t).
-prop(it, sav_a, has).
-prop(it, sav_a, hasn_t).
-prop(it, sav_a, had).
-prop(it, sav_a, hadn_t).
-prop(it, sav_a, will).
-prop(it, sav_a, won_t).
-prop(it, sav_a, would).
-prop(it, sav_a, wouldn_t).
-
-
-
-
 
 

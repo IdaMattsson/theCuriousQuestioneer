@@ -30,11 +30,11 @@
 
 % working version, expand according to number of avilable questions
 input(S, T) :- tag_question(S, T).
-
+input(S, R) :- recip_question(S, R).
 
 /* Question Types */
 
-% tag question is true if Q is the sentence S with a tag question added at the end.
+% tag question is true if Q1 is the sentence S with a tag question added at the end.
 
 % tag_question(S, Q1) :- tag(S, T1), atomics_to_string(S, " ", S1), string_concat(S1, T1, Q1).
 tag_question(S, Q1) :- tag(S, T), append(S, T, Q1).
@@ -42,17 +42,41 @@ tag_question(S, Q1) :- \+ tag(S, _), error(Q1).
 
 error([the, curious, questioneer, is, confused]).
 
+
+
 % tag analyze the first two words in the sentence and produce the tag question.
 
 % We assume the first word to be the subject and
 % the second word to be either an auxiliary verb or a verb.
 % NOTE: add the atomics_to_string!!! TODO
-tag([Sub, Aux, Verb|_], T1) :- prop(Sub, subject, ST), prop(Aux, aux, AT), prop(Verb, verb, VT), sav_agree(ST, AT, VT), prop(Aux, inv_aux, IAux), append([,, IAux], [Sub,?], T1).
+tag([Sub, Aux, Verb|_], T1) :- check_aux_input(Sub, Aux, Verb), prop(Aux, inv_aux, IAux), append([,, IAux], [Sub,?], T1).
 
-tag([Sub, Verb|_], T1) :- prop(Sub, subject, ST), prop(Verb, verb, VT), sav_agree(ST, n, VT), prop(VT, find_aux, IAux), append([,, IAux], [Sub,?], T1).
+tag([Sub, Verb|_], T1) :- check_verb_input(Sub, Verb, VT), prop(VT, vt_find_aux, IAux), append([,, IAux], [Sub,?], T1).
 
-tag([Sub, Verb_tb, Verb_ing|_], T1) :- prop(Sub, subject, ST), prop(Verb_tb, verb_tb, VT), prop(Verb_ing, verb_ing, true), sav_agree(ST, n, VT), prop(Verb_tb, inv_be, IVerb_tb), append([,, IVerb_tb], [Sub,?], T1).
+tag([Sub, Verb_tb, Verb_ing|_], T1) :- check_verb_ing_input(Sub, Verb_tb, Verb_ing), prop(Verb_tb, inv_be, IVerb_tb), append([,, IVerb_tb], [Sub,?], T1).
 
+
+% Reciprocal Question is true if Q2 is the sentence s with a Reciprocal question attached at the end
+recip_question(S, R) :- recip(S, R1), append(S, R1, R).
+
+% recip(S, Q) returns true if Q is the Reciprocal question to the input statement S 
+
+recip([Sub, Aux, Verb|_], T1) :- tag([Sub, Aux, Verb|_], [_, T_Aux, T_Sub | _]), prop(T_Sub, resp_sub, R_Sub), prop(T_Aux, resp_aux, R_Aux), append([,, R_Aux], [R_Sub,?], T1).
+
+recip([Sub, Verb|_], T1) :- check_verb_input(Sub, Verb, _), tag([Sub, Verb|_], [_, T_Aux, T_Sub|_]), prop(T_Sub, resp_sub, R_Sub), prop(T_Aux, resp_aux, R_Aux), append([,, R_Aux], [R_Sub,?], T1).
+
+recip([Sub, Verb_tb, Verb_ing|_], T1) :- check_verb_ing_input(Sub, Verb_tb, Verb_ing), tag([Sub, Verb_tb, Verb_ing|_], [_, T_Verb_tb, T_Sub|_]), prop(T_Sub, resp_sub, R_Sub), prop(T_Verb_tb, resp_be, R_Verb_tb), append([,, R_Verb_tb], [R_Sub,?], T1).
+
+
+
+% grammar check functions return true if Sub is a subject, Aux is an auxiliary verb and Verb is a verb
+check_aux_input(Sub, Aux, Verb) :-  prop(Sub, subject, ST), prop(Aux, aux, AT), prop(Verb, verb, VT), sav_agree(ST, AT, VT).
+
+% grammar check functions return true if Sub is a subject and Verb is a verb
+check_verb_input(Sub, Verb, VT) :-  prop(Sub, subject, ST), prop(Verb, verb, VT), sav_agree(ST, n, VT).
+
+% grammar check functions return true if Sub is a subject, Verb_tb is a 'to be' verb and Verb is a verb_ing
+check_verb_ing_input(Sub, Verb_tb, Verb_ing) :-  prop(Sub, subject, ST), prop(Verb_tb, verb_tb, VT), prop(Verb_ing, verb_ing, true), sav_agree(ST, n, VT).
 
 
 /* Grammar */
@@ -96,28 +120,6 @@ sav_agree(s_sp, n, vb_sp_pa).
 sav_agree(s_tp, n, vb_tp_pr).
 sav_agree(s_tp, n, vb_tp_pa).
 
-
-
-% check if type of subject and verb match
-% (This greatly reduce the amount of data in the database we need to input)
-% sv_agree(ST, VT)
-% ST is subject type
-% VT is verb type
-/*
-sv_agree(fst_snd,fst_snd).
-sv_agree(fst_snd,past).
-sv_agree(t_rd,t_rd).
-sv_agree(t_rd,past).
-*/
-
-
-
-% use verb type to find auxiliry verb
-% this finds hidden auxiliry verb
-% prop(Verb Type, find_aux, inverse auxiliry verb)
-prop(root_v, find_aux, don_t).
-prop(root_v_s, find_aux, doesn_t).
-prop(past, find_aux, didn_t).
 
 
 /*
@@ -207,6 +209,7 @@ prop(like, verb, root_v).
 prop(make, verb, root_v).
 prop(love, verb, root_v).
 prop(dance, verb, root_v).
+prop(be, verb, root_v).
 
 prop(likes, verb, root_v_s).
 prop(makes, verb, root_v_s).
@@ -223,7 +226,6 @@ prop(liking, verb_ing, true).
 prop(making, verb_ing, true).
 prop(loving, verb_ing, true).
 prop(dancing, verb_ing, true).
-prop(making, verb_ing, true).
 
 prop(am, verb_tb, vb_fs_pr).
 prop(are, verb_tb, vb_ss_pr).
@@ -278,7 +280,7 @@ prop(wouldn_t, aux, true).
 % Inverse Auxiliary relation
 prop(can, inv_aux, can_t).
 prop(can_t, inv_aux, can).
-prop(do, aux, don_t).
+prop(do, inv_aux, don_t).
 prop(don_t, inv_aux, do).
 prop(does, inv_aux, doesn_t).
 prop(doesn_t, inv_aux, does).
@@ -299,7 +301,7 @@ prop(wouldn_t, inv_aux, would).
 prop(am, inv_be, ain_t).
 prop(ain_t, inv_be, am).
 prop(are, inv_be, aren_t).
-prop(aren_t, inv_be, aren_t).
+prop(aren_t, inv_be, are).
 prop(is, inv_be, isn_t).
 prop(isn_t, inv_be, is).
 
@@ -309,8 +311,66 @@ prop(were, inv_be, weren_t).
 prop(weren_t, inv_be, were).
 
 
-% Inverse Question Words
-prop(i, inv_q_w, you).
-prop(you, inv_q_w, i).
+% Response subject names
+prop(i, resp_sub, you).
+prop(you, resp_sub, i).		 % just dance
+prop(he, resp_sub, you).
+prop(she, resp_sub, you).
+prop(it, resp_sub, you).
+prop(we, resp_sub, you).
+prop(they, resp_sub, you).
+
+% response aux for recip question
+prop(don_t, resp_aux, do).
+prop(didn_t, resp_aux, didn_t).
+prop(doesn_t, resp_aux, do).
+prop(do, resp_aux, don_t).
+prop(does, resp_aux, don_t).
+prop(did, resp_aux, didn_t).
+prop(can, resp_aux, can_t).
+prop(can_t, resp_aux, can).
+prop(have, resp_aux, haven_t).
+prop(haven_t, resp_aux, have).
+prop(had, resp_aux, hadn_t).
+prop(hadn_t, resp_aux, had).
+prop(has, resp_aux, hasn_t).
+prop(hasn_t, resp_aux, has).
+prop(will, resp_aux, won_t).
+prop(won_t, resp_aux, will).
+prop(would, resp_aux, wouldn_t).
+prop(wouldn_t, resp_aux, would).
+
+% Respone be-verb for recip question
+prop(ain_t, resp_be, are).
+prop(isn_t, resp_be, are).
+prop(aren_t, resp_be, are).
+
+prop(wasn_t, resp_be, were).
+prop(weren_t, resp_be, were).
+
+prop(am, resp_be, aren_t).
+prop(is, resp_be, aren_t).
+prop(are, resp_be, aren_t).
+
+prop(was, resp_be, weren_t).
+prop(were, resp_be, weren_t).
+
+
+% use verb type to find auxiliry verb
+% this finds hidden auxiliry verb
+% prop(Verb Type, vt_find_aux, inverse auxiliry verb)
+prop(root_v, vt_find_aux, don_t).
+prop(root_v_s, vt_find_aux, doesn_t).
+prop(past, vt_find_aux, didn_t).
+
+% use subject type to find auxiliry verb
+% this finds hidden auxiliry verb
+% prop(Subject Type, st_find_aux, auxiliry verb)
+prop(s_fs, st_find_aux, do).
+prop(s_ss, st_find_aux, do).
+prop(s_ts, st_find_aux, does).
+prop(s_fp, st_find_aux, do).
+prop(s_sp, st_find_aux, do).
+prop(s_tp, st_find_aux, do).
 
 

@@ -55,9 +55,14 @@ tag([Sub, Aux, Verb|_], T1) :- check_aux_input(Sub, Aux, Verb), prop(Aux, inv_au
 % Input contains Subject, Verb 
 tag([Sub, Verb|_], T1) :- check_verb_input(Sub, Verb, VT), prop(VT, vt_find_aux, IAux), append([IAux], [Sub], T1).
 
+
 % Input contains Subject, ToBe_Verb, Verb in -ing form
 tag([Sub, Verb_tb, Verb_ing|_], T1) :- check_verb_ing_input(Sub, Verb_tb, Verb_ing), prop(Verb_tb, inv_be, IVerb_tb), append([IVerb_tb], [Sub], T1).
 
+% We assume the first word to be the subject and
+% the second word to be either an auxiliary verb or a verb.
+% NOTE: add the atomics_to_string!!! TODO
+tag([Sub, Aux, Verb|_], T1) :- check_aux_input(Sub, Aux, Verb), prop(Aux, inv_aux, IAux), append([,, IAux], [Sub,?], T1).
 
 % --- Reciprocal question ---
 % Reciprocal Question is true if Q2 is the sentence s with a Reciprocal question attached at the end 
@@ -75,6 +80,8 @@ recip([Sub, Verb|_], R1) :- check_verb_input(Sub, Verb, _), tag([Sub, Verb|_], [
 
 % Input contains Subject, ToBe_Verb, Verb in -ing form
 recip([Sub, Verb_tb, Verb_ing|_], R1) :- check_verb_ing_input(Sub, Verb_tb, Verb_ing), tag([Sub, Verb_tb, Verb_ing|_], [T_Verb_tb, T_Sub|_]), prop(T_Sub, resp_sub, R_Sub), prop(T_Verb_tb, resp_be, R_Verb_tb), append([R_Verb_tb], [R_Sub], R1).
+
+recip([Sub, Verb_tb, Verb_ing|_], T1) :- check_verb_ing_input(Sub, Verb_tb, Verb_ing), tag([Sub, Verb_tb, Verb_ing|_], [_, T_Verb_tb, T_Sub|_]), prop(T_Sub, resp_sub, R_Sub), prop(T_Verb_tb, resp_be, R_Verb_tb), append([R_Verb_tb], [R_Sub], T1).
 
 
 recip([Sub, Verb_tb, Verb_ing|_], T1) :- check_verb_ing_input(Sub, Verb_tb, Verb_ing), tag([Sub, Verb_tb, Verb_ing|_], [T_Verb_tb, T_Sub|_]), prop(T_Sub, resp_sub, R_Sub), prop(T_Verb_tb, resp_be, R_Verb_tb), append([R_Verb_tb], [R_Sub], T1).

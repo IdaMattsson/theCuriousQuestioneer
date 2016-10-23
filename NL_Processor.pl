@@ -61,9 +61,11 @@ recip_question(S, R) :- recip(S, R1), append(S, R1, R).
 
 % recip(S, Q) returns true if Q is the Reciprocal question to the input statement S 
 
-recip([Sub, Aux, Verb|_], T1) :- tag([Sub, Aux, Verb|_], [_, T_Aux, T_Sub | _]), prop(T_Sub, resp_sub, R_Sub), prop(T_Aux, resp_aux, R_Aux), append([,, R_Aux], [R_Sub,?], T1).
+recip([Sub, Aux, Verb|_], T1) :- check_aux_input(Sub, Aux, Verb), tag([Sub, Aux, Verb|_], [_, T_Aux, T_Sub | _]), prop(T_Sub, resp_sub, R_Sub), prop(T_Aux, resp_aux, R_Aux), append([,, R_Aux], [R_Sub,?], T1).
 
 recip([Sub, Verb|_], T1) :- check_verb_input(Sub, Verb, _), tag([Sub, Verb|_], [_, T_Aux, T_Sub|_]), prop(T_Sub, resp_sub, R_Sub), prop(T_Aux, resp_aux, R_Aux), append([,, R_Aux], [R_Sub,?], T1).
+
+% recip([Sub, Verb, Noun|_], T1) :- check_verb_input(Sub, Verb, Noun, _), tag([Sub, Verb|_], [_, T_Aux, T_Sub|_]), prop(T_Sub, resp_sub, R_Sub), prop(T_Aux, resp_aux, R_Aux), append([,, R_Aux], [R_Sub,?], T1).
 
 recip([Sub, Verb_tb, Verb_ing|_], T1) :- check_verb_ing_input(Sub, Verb_tb, Verb_ing), tag([Sub, Verb_tb, Verb_ing|_], [_, T_Verb_tb, T_Sub|_]), prop(T_Sub, resp_sub, R_Sub), prop(T_Verb_tb, resp_be, R_Verb_tb), append([,, R_Verb_tb], [R_Sub,?], T1).
 
@@ -75,6 +77,8 @@ check_aux_input(Sub, Aux, Verb) :-  prop(Sub, subject, ST), prop(Aux, aux, AT), 
 % grammar check functions return true if Sub is a subject and Verb is a verb
 check_verb_input(Sub, Verb, VT) :-  prop(Sub, subject, ST), prop(Verb, verb, VT), sav_agree(ST, n, VT).
 
+% check_verb_input(Sub, Verb, Noun, VT) :- prop(Sub, subject, ST), prop(Verb, verb, VT), sav_agree(ST, n, VT).
+
 % grammar check functions return true if Sub is a subject, Verb_tb is a 'to be' verb and Verb is a verb_ing
 check_verb_ing_input(Sub, Verb_tb, Verb_ing) :-  prop(Sub, subject, ST), prop(Verb_tb, verb_tb, VT), prop(Verb_ing, verb_ing, true), sav_agree(ST, n, VT).
 
@@ -84,7 +88,8 @@ check_verb_ing_input(Sub, Verb_tb, Verb_ing) :-  prop(Sub, subject, ST), prop(Ve
 % sav_agree(ST, AT, VT) is true if the auxiliary verb agrees with the subject and the verb agrees with the aux (that the verb is a root verb)
 % if AT is n, there is no auxuliary verb in the input
 
-%for subject with verb only
+% for subject with verb only
+%
 sav_agree(s_fs, n, root_v).         % subject_firstSingular maps to root verb
 sav_agree(s_fs, n, past).
 sav_agree(s_ss, n, root_v).
@@ -149,7 +154,7 @@ subject([X|_], X) :- prop(X, subject, true).
 subject([_, Y|R], S) :- subject([Y|R], S).
 
 
-% extract auxiliry verb from the sentence
+% extract auxiliary verb from the sentence
 % aux(T0, T1) is true if T0-T1 is a auxiliary verb
 aux([X|_], X) :- prop(X, aux, true).
 aux([_, Y|R], A) :- aux([Y|R], A).
@@ -186,47 +191,59 @@ mp(T1,T2,Ind,C1,C2).
 % Detemine the subjects and what kind of subjects (First+second or third person)
 % The form of the auxiliary verb does not change between first and second person, so they are treated as the same.
 
-
+% s_fs is first person singular subject
+% s_ss is second person singular subject
+% s_ts is third person singular subject of
+% s_fp is first person plural subject
+% s_sp is second person plural subject
+% s_tp is third person plural subject
 prop(i, subject, s_fs).           % I do
 prop(you, subject, s_ss).         % you do
 prop(he, subject, s_ts).          % he does
 prop(she, subject, s_ts).         % she does
 prop(it, subject, s_ts).          % it does
-prop(we, subject, s_fp).           % we do
-prop(you, subject, s_sp).          % you do
-prop(they, subject, s_tp).         % they do
+prop(we, subject, s_fp).          % we do
+prop(you, subject, s_sp).         % you do
+prop(they, subject, s_tp).        % they do
 
-
-% Things categorized as fruit
-prop(orange, fruit, true).
-prop(oranges, fruit, true).
-prop(apple, fruit, true).
-prop(apples, fruit, true).
 
 % Detemine the verbs and what kind of verbs (First+second or third person or past tense)
 
+% root_v is root verb
 prop(like, verb, root_v).
 prop(make, verb, root_v).
 prop(love, verb, root_v).
 prop(dance, verb, root_v).
 prop(be, verb, root_v).
 
+% root_v_s is root verb plus "s" (for third person sigular subject)
 prop(likes, verb, root_v_s).
 prop(makes, verb, root_v_s).
 prop(loves, verb, root_v_s).
 prop(dances, verb, root_v_s).
 
+% past is past tense
 prop(liked, verb, past).
 prop(made, verb, past).
 prop(loved, verb, past).
 prop(danced, verb, past).
 
+
+% Detemine the verb_ings
 %liking and loving are not gramatically correct, but colloquially used
 prop(liking, verb_ing, true).
 prop(making, verb_ing, true).
 prop(loving, verb_ing, true).
 prop(dancing, verb_ing, true).
 
+
+% Detemine the verb "to be" and what kind of verb "to be" it is(first/second/third person + sigular/plural + present/past tense)
+% vb_fs_pr is first person singular verb "to be" in present tense
+% vb_ss_pr is second person singular verb "to be" in present tense
+% vb_ts_pr is third person singular verb "to be" in present tense
+% vb_fp_pr is first person plural verb "to be" in present tense
+% vb_sp_pr is second person plural verb "to be" in present tense
+% vb_tp_pr is third person plural verb "to be" in present tense
 prop(am, verb_tb, vb_fs_pr).
 prop(are, verb_tb, vb_ss_pr).
 prop(is, verb_tb, vb_ts_pr).
@@ -234,19 +251,25 @@ prop(are, verb_tb, vb_fp_pr).
 prop(are, verb_tb, vb_sp_pr).
 prop(are, verb_tb, vb_tp_pr).
 
-prop(was, verb_tb, vb_fs_pa).
-prop(were, verb_tb, vb_ss_pa).
-prop(was, verb_tb, vb_ts_pa).
-prop(were, verb_tb, vb_fp_pa).
-prop(were, verb_tb, vb_sp_pa).
-prop(were, verb_tb, vb_tp_pa).
-
 prop(ain_t, verb_tb, vb_fs_pr).
 prop(aren_t, verb_tb, vb_ss_pr).
 prop(isn_t, verb_tb, vb_ts_pr).
 prop(aren_t, verb_tb, vb_fp_pr).
 prop(aren_t, verb_tb, vb_sp_pr).
 prop(aren_t, verb_tb, vb_tp_pr).
+
+% vb_fs_pa is first person singular verb "to be" in past tense
+% vb_ss_pa is second person singular verb "to be" in past tense
+% vb_ts_pa is third person singular verb "to be" in past tense
+% vb_fp_pa is first person plural verb "to be" in past tense
+% vb_sp_pa is second person plural verb "to be" in past tense
+% vb_tp_pa is third person plural verb "to be" in past tense
+prop(was, verb_tb, vb_fs_pa).
+prop(were, verb_tb, vb_ss_pa).
+prop(was, verb_tb, vb_ts_pa).
+prop(were, verb_tb, vb_fp_pa).
+prop(were, verb_tb, vb_sp_pa).
+prop(were, verb_tb, vb_tp_pa).
 
 prop(wasn_t, verb_tb, vb_fs_pa).
 prop(weren_t, verb_tb, vb_ss_pa).
@@ -257,6 +280,7 @@ prop(wasn_t, verb_tb, vb_tp_pa).
 
 % Auxiliary verbs
 prop(can, aux, true).
+prop(could, aux, true).
 prop(do, aux, true).
 prop(does, aux, a_ts).
 prop(did, aux, true).
@@ -268,6 +292,7 @@ prop(would, aux, true).
 
 % Negative Auxiliary verbs
 prop(can_t, aux, true).
+prop(couldn_t, aux, true).
 prop(don_t, aux, true).
 prop(doesn_t, aux, a_ts).
 prop(didn_t, aux, true).
@@ -277,9 +302,11 @@ prop(hasn_t, aux, a_ts).
 prop(won_t, aux, true).
 prop(wouldn_t, aux, true).
 
-% Inverse Auxiliary relation
+% Inverse Auxiliary relation (from negative to positive or the other way around)
 prop(can, inv_aux, can_t).
 prop(can_t, inv_aux, can).
+prop(could, inv_aux, couldn_t).
+prop(couldn_t, inv_aux, could).
 prop(do, inv_aux, don_t).
 prop(don_t, inv_aux, do).
 prop(does, inv_aux, doesn_t).
@@ -297,30 +324,46 @@ prop(won_t, inv_aux, will).
 prop(would, inv_aux, wouldn_t).
 prop(wouldn_t, inv_aux, would).
 
-% Inverse "be" verbs
+% Inverse "be" verbs (from negative to positive or the other way around)
 prop(am, inv_be, ain_t).
 prop(ain_t, inv_be, am).
 prop(are, inv_be, aren_t).
 prop(aren_t, inv_be, are).
 prop(is, inv_be, isn_t).
 prop(isn_t, inv_be, is).
-
 prop(was, inv_be, wasn_t).
 prop(wasn_t, inv_be, was).
 prop(were, inv_be, weren_t).
 prop(weren_t, inv_be, were).
 
 
-% Response subject names
+% Response subject according to the mapping relation from tag to recip
+% prop(T_Sub, resp_sub, R_Sub)
+% T_Sub is the subject produced in tag in tag_question
+% R_Sub is the subject we want to output for recip
+% For example:
+% if the input is "i like apples"
+% tag will be "don_t 'i'?"
+% recip should be "do 'you'?"
+% the relation mapping is built on all the possible input domain and output range
+
 prop(i, resp_sub, you).
-prop(you, resp_sub, i).		 % just dance
+prop(you, resp_sub, i).
 prop(he, resp_sub, you).
 prop(she, resp_sub, you).
 prop(it, resp_sub, you).
 prop(we, resp_sub, you).
 prop(they, resp_sub, you).
 
-% response aux for recip question
+% Response aux for recip question according to the mapping relation from tag to recip
+% prop(T_Aux, resp_aux, R_Aux)
+% T_Aux is the auxiliary verb produced in tag in tag_question
+% R_Aux is the auxiliary verb we want to output for recip
+% For example:
+% if the input is "i like apples"
+% tag will be "'don_t' i?"
+% recip should be "'do' you?"
+% the relation mapping is built on all the possible input domain and output range
 prop(don_t, resp_aux, do).
 prop(didn_t, resp_aux, didn_t).
 prop(doesn_t, resp_aux, do).
@@ -340,37 +383,33 @@ prop(won_t, resp_aux, will).
 prop(would, resp_aux, wouldn_t).
 prop(wouldn_t, resp_aux, would).
 
-% Respone be-verb for recip question
+% Respone be-verb for recip question according to the mapping relation from tag to recip
+% prop(T_Verb_tb, resp_be, R_Verb_tb)
+% T_Verb_tb is the verb "to be" produced in tag in tag_question
+% R_Verb_tb is the verb "to be" we want to output for recip
+% For example:
+% if the input is "i am swimming"
+% tag will be "'ain_t' i?"
+% recip should be "'are' you?"
+% the relation mapping is built on all the possible input domain and output range
 prop(ain_t, resp_be, are).
 prop(isn_t, resp_be, are).
 prop(aren_t, resp_be, are).
-
 prop(wasn_t, resp_be, were).
 prop(weren_t, resp_be, were).
-
 prop(am, resp_be, aren_t).
 prop(is, resp_be, aren_t).
 prop(are, resp_be, aren_t).
-
 prop(was, resp_be, weren_t).
 prop(were, resp_be, weren_t).
 
 
-% use verb type to find auxiliry verb
-% this finds hidden auxiliry verb
-% prop(Verb Type, vt_find_aux, inverse auxiliry verb)
+% Use verb type to find auxiliary verb if the input does not contain any auxiliary verb
+% this finds hidden auxiliary verb
+% prop(Verb Type, vt_find_aux, inverse auxiliary verb)
 prop(root_v, vt_find_aux, don_t).
 prop(root_v_s, vt_find_aux, doesn_t).
 prop(past, vt_find_aux, didn_t).
 
-% use subject type to find auxiliry verb
-% this finds hidden auxiliry verb
-% prop(Subject Type, st_find_aux, auxiliry verb)
-prop(s_fs, st_find_aux, do).
-prop(s_ss, st_find_aux, do).
-prop(s_ts, st_find_aux, does).
-prop(s_fp, st_find_aux, do).
-prop(s_sp, st_find_aux, do).
-prop(s_tp, st_find_aux, do).
 
 

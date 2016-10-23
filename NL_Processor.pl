@@ -43,7 +43,7 @@ input(S, R_O) :- recip_question(S, R_O).
 tag_question(S, T) :- tag(S, T1), formatting(S, T1, T).
 tag_question(S, Q1) :- \+ tag(S, _), error(Q1).
 
-error([the, curious, questioneer, is, confused]).
+error("The Curious Questioneer is confused.").
 
 % tag(S, T) returns true if T is the corresponding tag to the sentence S
 % We assume the first word to be the subject and

@@ -3,6 +3,7 @@
 % is released under GPL, version 3 or later; see http://www.gnu.org/licenses/gpl.html
 
 % Note: the pronoun 'you' is interpreted both as singular second person 'you' and plural third person 'you'.
+%REMOVE THE ABOVE COMMENT if we remove the plural 'you'
 
 
 % generate(Questions) returns true if we read a valid input from the user, and Q is the question(s) returned from input(Sentence, Question).
@@ -128,7 +129,7 @@ prop(he, subject, s_ts).          % he does
 prop(she, subject, s_ts).         % she does
 prop(it, subject, s_ts).          % it does
 prop(we, subject, s_fp).          % we do
-prop(you, subject, s_sp).         % you do
+%prop(you, subject, s_sp).         % you do 	CHANGED
 prop(they, subject, s_tp).        % they do
 
 

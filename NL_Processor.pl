@@ -49,7 +49,7 @@ error([the, curious, questioneer, is, confused]).
 % We assume the first word to be the subject and
 % the second word to be either an auxiliary verb or a verb.
 % NOTE: add the atomics_to_string!!! TODO
-tag([Sub, Aux, Verb|_], T1) :- check_aux_input(Sub, Aux, Verb), prop(Aux, inv_aux, IAux), append([,, IAux], [Sub,?], T1).
+tag([Sub, Aux, Verb|_], T1) :- prop(Aux, inv_aux, IAux), append([,, IAux], [Sub,?], T1).
 
 tag([Sub, Verb|_], T1) :- check_verb_input(Sub, Verb, VT), prop(VT, vt_find_aux, IAux), append([,, IAux], [Sub,?], T1).
 
@@ -64,8 +64,6 @@ recip_question(S, R) :- recip(S, R1), append(S, R1, R).
 recip([Sub, Aux, Verb|_], T1) :- check_aux_input(Sub, Aux, Verb), tag([Sub, Aux, Verb|_], [_, T_Aux, T_Sub | _]), prop(T_Sub, resp_sub, R_Sub), prop(T_Aux, resp_aux, R_Aux), append([,, R_Aux], [R_Sub,?], T1).
 
 recip([Sub, Verb|_], T1) :- check_verb_input(Sub, Verb, _), tag([Sub, Verb|_], [_, T_Aux, T_Sub|_]), prop(T_Sub, resp_sub, R_Sub), prop(T_Aux, resp_aux, R_Aux), append([,, R_Aux], [R_Sub,?], T1).
-
-% recip([Sub, Verb, Noun|_], T1) :- check_verb_input(Sub, Verb, Noun, _), tag([Sub, Verb|_], [_, T_Aux, T_Sub|_]), prop(T_Sub, resp_sub, R_Sub), prop(T_Aux, resp_aux, R_Aux), append([,, R_Aux], [R_Sub,?], T1).
 
 recip([Sub, Verb_tb, Verb_ing|_], T1) :- check_verb_ing_input(Sub, Verb_tb, Verb_ing), tag([Sub, Verb_tb, Verb_ing|_], [_, T_Verb_tb, T_Sub|_]), prop(T_Sub, resp_sub, R_Sub), prop(T_Verb_tb, resp_be, R_Verb_tb), append([,, R_Verb_tb], [R_Sub,?], T1).
 

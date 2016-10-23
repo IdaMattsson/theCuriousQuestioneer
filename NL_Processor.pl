@@ -27,7 +27,7 @@
 % S is input sentence and Q is the returned question(s)
 % this version is good for keeping only the basic shape, no variable assignment. Use for final version, but not if already in string version
 %input(S) :- tag_question(S,Q1), write(Q1).
-generate(S, O) :- readln(S, A), input(A, O).
+generate(O) :- readln(S), input(S, O).
 % remove if not used!! TODO
 
 % working version, expand according to number of available questions
@@ -39,13 +39,10 @@ input(S, R_O) :- recip_question(S, R_O).
 /* Question Types */
 
 % --- Tag question ---
-%tag question is true if Q1 is the sentence S with a tag question added at the end.
-
-% tag_question(S, Q1) :- tag(S, T1), atomics_to_string(S, " ", S1), string_concat(S1, T1, Q1).
+% tag question is true if Q1 is the sentence S with a tag question added at the end. 
+% if we do not succeed in making a tag, we output an error string.
 tag_question(S, T) :- tag(S, T1), formatting(S, T1, T).
 tag_question(S, Q1) :- \+ tag(S, _), error(Q1).
-
-error("The Curious Questioneer is confused.").
 
 % tag(S, T) returns true if T is the corresponding tag to the sentence S
 % We assume the first word to be the subject and
@@ -63,30 +60,25 @@ tag([Sub, Verb_tb, Verb_ing|_], T1) :- check_verb_ing_input(Sub, Verb_tb, Verb_i
 
 % We assume the first word to be the subject and
 % the second word to be either an auxiliary verb or a verb.
-% NOTE: add the atomics_to_string!!! TODO
-tag([Sub, Aux, Verb|_], T1) :- check_aux_input(Sub, Aux, Verb), prop(Aux, inv_aux, IAux), append([,, IAux], [Sub,?], T1).
+tag([Sub, Aux, Verb|_], T1) :- check_aux_input(Sub, Aux, Verb), prop(Aux, inv_aux, IAux), append([IAux], [Sub], T1).
+
 
 % --- Reciprocal question ---
 % Reciprocal Question is true if Q2 is the sentence s with a Reciprocal question attached at the end 
+% if we do not succeed in making a reciprocal question, we output an error string.
 recip_question(S, R) :- recip(S, R1), formatting(S, R1, R).
+recip_question(S, Q1) :- \+ recip(S, _), error(Q1).
 
 % recip(S, Q) returns true if R1 is the reciprocal question to the input statement S 
 
 % Input contains Subject, Auxiliary verb, Verb
-
 recip([Sub, Aux, Verb|_], T1) :- check_aux_input(Sub, Aux, Verb), tag([Sub, Aux, Verb|_], [T_Aux, T_Sub | _]), prop(T_Sub, resp_sub, R_Sub), prop(T_Aux, resp_aux, R_Aux), append([R_Aux], [R_Sub], T1).
-
 
 % Input contains Subject, Verb 
 recip([Sub, Verb|_], R1) :- check_verb_input(Sub, Verb, _), tag([Sub, Verb|_], [T_Aux, T_Sub|_]), prop(T_Sub, resp_sub, R_Sub), prop(T_Aux, resp_aux, R_Aux), append([R_Aux], [R_Sub], R1).
 
 % Input contains Subject, ToBe_Verb, Verb in -ing form
 recip([Sub, Verb_tb, Verb_ing|_], R1) :- check_verb_ing_input(Sub, Verb_tb, Verb_ing), tag([Sub, Verb_tb, Verb_ing|_], [T_Verb_tb, T_Sub|_]), prop(T_Sub, resp_sub, R_Sub), prop(T_Verb_tb, resp_be, R_Verb_tb), append([R_Verb_tb], [R_Sub], R1).
-
-recip([Sub, Verb_tb, Verb_ing|_], T1) :- check_verb_ing_input(Sub, Verb_tb, Verb_ing), tag([Sub, Verb_tb, Verb_ing|_], [_, T_Verb_tb, T_Sub|_]), prop(T_Sub, resp_sub, R_Sub), prop(T_Verb_tb, resp_be, R_Verb_tb), append([R_Verb_tb], [R_Sub], T1).
-
-
-recip([Sub, Verb_tb, Verb_ing|_], T1) :- check_verb_ing_input(Sub, Verb_tb, Verb_ing), tag([Sub, Verb_tb, Verb_ing|_], [T_Verb_tb, T_Sub|_]), prop(T_Sub, resp_sub, R_Sub), prop(T_Verb_tb, resp_be, R_Verb_tb), append([R_Verb_tb], [R_Sub], T1).
 
 
 % grammar check functions return true if Sub is a subject, Aux is an auxiliary verb and Verb is a verb
@@ -103,13 +95,14 @@ check_verb_ing_input(Sub, Verb_tb, Verb_ing) :-  prop(Sub, subject, ST), prop(Ve
 % formatting(Sentence, Addition, Output) returns true if Output is the string of the form 'sentence S, addition A?'
 formatting(S, A, O) :- atomics_to_string(S, " ", S1), append([,], A, A1), atomics_to_string(A1, " ", A2), string_concat(S1, A2, I), string_concat(I, '?', O).
 
+% output error message
+error("The Curious Questioneer is confused.").
+
 /* Grammar */
 
 % sav_agree(ST, AT, VT) is true if the auxiliary verb agrees with the subject and the verb agrees with the aux (that the verb is a root verb)
 % if AT is n, there is no auxuliary verb in the input
-
 % for subject with verb only
-%
 sav_agree(s_fs, n, root_v).         % subject_firstSingular maps to root verb
 sav_agree(s_fs, n, past).
 sav_agree(s_ss, n, root_v).

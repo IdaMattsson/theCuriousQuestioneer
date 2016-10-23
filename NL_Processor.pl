@@ -1,16 +1,11 @@
 % The Curious Questioneer is based off of the natural language processor given in the class example code. 
-
-% Prolog representation of a grammar to build a query for a database
-% This is slightly expanded code of Figures 12.10 and 12.11 in Section 12.6.6 of
-% Poole and Mackworth, Artificial Intelligence: foundations of
-% computational agents, Cambridge, 2010.
-
-% Copyright (c) David Poole and Alan Mackworth 2010. This program
+% These parts are under the Copyright (c) of David Poole and Alan Mackworth 2010. This program
 % is released under GPL, version 3 or later; see http://www.gnu.org/licenses/gpl.html
 
 % Note: the pronoun 'you' is interpreted both as singular second person 'you' and plural third person 'you'.
 
-% generate returns true if we read a valid input from the user, and Q is the question(s) returned from input(Sentence, Question).
+
+% generate(Questions) returns true if we read a valid input from the user, and Q is the question(s) returned from input(Sentence, Question).
 generate(Q) :- readln(S), input(S, Q).
 
 % input(Sentence, Question_Type) returns true if the Question is a question returned of type T. 
@@ -138,8 +133,7 @@ prop(they, subject, s_tp).        % they do
 
 
 % Detemine the verbs and what kind of verbs (First+second or third person or past tense)
-
-% root_v is root verb
+% root_v means the root of the verb
 prop(like, verb, root_v).
 prop(make, verb, root_v).
 prop(love, verb, root_v).
@@ -159,8 +153,8 @@ prop(loved, verb, past).
 prop(danced, verb, past).
 
 
-% Detemine the verb_ings
-%liking and loving are not gramatically correct, but colloquially used
+% Detemine the verbs with -ing endings
+% liking and loving are not gramatically correct, but colloquially used
 prop(liking, verb_ing, true).
 prop(making, verb_ing, true).
 prop(loving, verb_ing, true).
@@ -209,6 +203,7 @@ prop(wasn_t, verb_tb, vb_sp_pa).
 prop(wasn_t, verb_tb, vb_tp_pa).
 
 % Auxiliary verbs
+% a_ts means auxiliary verb, third person singular
 prop(can, aux, true).
 prop(could, aux, true).
 prop(do, aux, true).
@@ -221,6 +216,7 @@ prop(will, aux, true).
 prop(would, aux, true).
 
 % Negative Auxiliary verbs
+% a_ts means auxiliary verb, third person singular
 prop(can_t, aux, true).
 prop(couldn_t, aux, true).
 prop(don_t, aux, true).
@@ -268,9 +264,9 @@ prop(weren_t, inv_be, were).
 
 
 % Response subject according to the mapping relation from tag to recip
-% prop(T_Sub, resp_sub, R_Sub)
-% T_Sub is the subject produced in tag in tag_question
-% R_Sub is the subject we want to output for recip
+% prop(Tag_Sub, response_sub, Reciprocal_Sub)
+% Tag_Sub is the subject produced in tag in tag_question
+% Reciprocal_Sub is the subject we want to output for recip
 % For example:
 % if the input is "i like apples"
 % tag will be "don_t 'i'?"
@@ -286,9 +282,9 @@ prop(we, resp_sub, you).
 prop(they, resp_sub, you).
 
 % Response aux for recip question according to the mapping relation from tag to recip
-% prop(T_Aux, resp_aux, R_Aux)
-% T_Aux is the auxiliary verb produced in tag in tag_question
-% R_Aux is the auxiliary verb we want to output for recip
+% prop(Tag_Aux, resp_aux, Reciprocal_Aux)
+% Tag_Aux is the auxiliary verb produced in tag in tag_question
+% Reciprocal_Aux is the auxiliary verb we want to output for recip
 % For example:
 % if the input is "i like apples"
 % tag will be "'don_t' i?"

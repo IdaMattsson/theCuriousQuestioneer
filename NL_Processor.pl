@@ -1,7 +1,6 @@
 % The Curious Questioneer is based off of the natural language processor given in the class example code. 
-% Prolog representation of a grammar to build a query for a database
-% This is not meant to be polished or lingustically reasonable, but purely to show what can be done
 
+% Prolog representation of a grammar to build a query for a database
 % This is slightly expanded code of Figures 12.10 and 12.11 in Section 12.6.6 of
 % Poole and Mackworth, Artificial Intelligence: foundations of
 % computational agents, Cambridge, 2010.
@@ -9,31 +8,15 @@
 % Copyright (c) David Poole and Alan Mackworth 2010. This program
 % is released under GPL, version 3 or later; see http://www.gnu.org/licenses/gpl.html
 
-% noun_phrase(T0,T4,Ind,C0,C4) is true if
-%  T0 and T4 are list of words, such that
-%        T4 is an ending of T0
-%        the words in T0 before T4 (written T0-T4) form a noun phrase
-%  Ind is the individual that the noun phrase is referring to
-%  C0 and C4 are lists of relations such that
-%        C0 is an ending of C4 and
-%        the relations in C4-C0 give the constraints on Ind implied by the noun phrase
-% A noun phrase is a determiner followed by adjectives followed
-% by a noun followed by an optional modifying phrase:
+% Note: the pronoun 'you' is interpreted both as singular second person 'you' and plural third person 'you'.
 
+% generate returns true if we read a valid input from the user, and Q is the question(s) returned from input(Sentence, Question).
+generate(Q) :- readln(S), input(S, Q).
 
-% ================= WIP =======================
-
-
-% S is input sentence and Q is the returned question(s)
-% this version is good for keeping only the basic shape, no variable assignment. Use for final version, but not if already in string version
-%input(S) :- tag_question(S,Q1), write(Q1).
-generate(O) :- readln(S), input(S, O).
-% remove if not used!! TODO
-
-% working version, expand according to number of available questions
-% output is in string format
-input(S, T_O) :- tag_question(S, T_O).
-input(S, R_O) :- recip_question(S, R_O).
+% input(Sentence, Question_Type) returns true if the Question is a question returned of type T. 
+% output question is formatted to a string.
+input(S, Q_T) :- tag_question(S, Q_T).
+input(S, Q_R) :- recip_question(S, Q_R).
 
 
 /* Question Types */
@@ -54,20 +37,15 @@ tag([Sub, Aux, Verb|_], T1) :- check_aux_input(Sub, Aux, Verb), prop(Aux, inv_au
 % Input contains Subject, Verb 
 tag([Sub, Verb|_], T1) :- check_verb_input(Sub, Verb, VT), prop(VT, vt_find_aux, IAux), append([IAux], [Sub], T1).
 
-
 % Input contains Subject, ToBe_Verb, Verb in -ing form
 tag([Sub, Verb_tb, Verb_ing|_], T1) :- check_verb_ing_input(Sub, Verb_tb, Verb_ing), prop(Verb_tb, inv_be, IVerb_tb), append([IVerb_tb], [Sub], T1).
-
-% We assume the first word to be the subject and
-% the second word to be either an auxiliary verb or a verb.
-tag([Sub, Aux, Verb|_], T1) :- check_aux_input(Sub, Aux, Verb), prop(Aux, inv_aux, IAux), append([IAux], [Sub], T1).
 
 
 % --- Reciprocal question ---
 % Reciprocal Question is true if Q2 is the sentence s with a Reciprocal question attached at the end 
 % if we do not succeed in making a reciprocal question, we output an error string.
+% since the check for the recip question relies on the tag question generator, we do not need to add the error check here. 
 recip_question(S, R) :- recip(S, R1), formatting(S, R1, R).
-recip_question(S, Q1) :- \+ recip(S, _), error(Q1).
 
 % recip(S, Q) returns true if R1 is the reciprocal question to the input statement S 
 
@@ -86,8 +64,6 @@ check_aux_input(Sub, Aux, Verb) :-  prop(Sub, subject, ST), prop(Aux, aux, AT), 
 
 % grammar check functions return true if Sub is a subject and Verb is a verb
 check_verb_input(Sub, Verb, VT) :-  prop(Sub, subject, ST), prop(Verb, verb, VT), sav_agree(ST, n, VT).
-
-% check_verb_input(Sub, Verb, Noun, VT) :- prop(Sub, subject, ST), prop(Verb, verb, VT), sav_agree(ST, n, VT).
 
 % grammar check functions return true if Sub is a subject, Verb_tb is a 'to be' verb and Verb is a verb_ing
 check_verb_ing_input(Sub, Verb_tb, Verb_ing) :-  prop(Sub, subject, ST), prop(Verb_tb, verb_tb, VT), prop(Verb_ing, verb_ing, true), sav_agree(ST, n, VT).
@@ -139,65 +115,6 @@ sav_agree(s_tp, n, vb_tp_pr).
 sav_agree(s_tp, n, vb_tp_pa).
 
 
-
-/*
-noun_phrase(T0,T4,Ind,C0,C4) :-
-det(T0,T1,Ind,C0,C1),
-adjectives(T1,T2,Ind,C1,C2),
-noun(T2,T3,Ind,C2,C3),
-mp(T3,T4,Ind,C3,C4).
-
-% Determiners (articles) are ignored in this oversimplified example.
-% They do not provide any extra constaints.
-det([the | T],T,_,C,C).
-det([a | T],T,_,C,C).
-det(T,T,_,C,C).
-
-% Adjectives consist of a sequence of adjectives.
-% The meaning of the arguments is the same as for noun_phrase
-adjectives(T0,T2,Ind,C0,C2) :-
-adj(T0,T1,Ind,C0,C1),
-adjectives(T1,T2,Ind,C1,C2).
-adjectives(T,T,_,C,C).
-
-
-% extract subject from sentence (assumes the first subject )
-% subject(T0,T1) is true if T0-T1 is a subject
-subject([X|_], X) :- prop(X, subject, true).
-subject([_, Y|R], S) :- subject([Y|R], S).
-
-
-% extract auxiliary verb from the sentence
-% aux(T0, T1) is true if T0-T1 is a auxiliary verb
-aux([X|_], X) :- prop(X, aux, true).
-aux([_, Y|R], A) :- aux([Y|R], A).
-*/
-
-% relation "like"
-% Assume everyone likes everything in the input
-% reln([like|T], T, _, _, C, [prop(whoever, like, whatever)|C]).
-% reln([likes|T], T, _, _, C, [prop(whoever, likes, whatever)|C]).
-
-/*
-
-% question(Question,QR,Indect,Q0,Query) is true if Query-Q0 provides an answer about Indect to Question-QR
-question([is | T0],T2,Ind,C0,C2) :-
-noun_phrase(T0,T1,Ind,C0,C1),
-mp(T1,T2,Ind,C1,C2).
-question([who,is | T0],T1,Ind,C0,C1) :-
-mp(T0,T1,Ind,C0,C1).
-question([who,is | T0],T1,Ind,C0,C1) :-
-noun_phrase(T0,T1,Ind,C0,C1).
-question([who,is | T0],T1,Ind,C0,C1) :-
-adjectives(T0,T1,Ind,C0,C1).
-question([what | T0],T2,Ind,C0,C2) :-      % allows for a "what ... is ..."
-noun_phrase(T0,[is|T1],Ind,C0,C1),
-mp(T1,T2,Ind,C1,C2).
-question([what | T0],T2,Ind,C0,C2) :-
-noun_phrase(T0,T1,Ind,C0,C1),
-mp(T1,T2,Ind,C1,C2).
-
-*/
 
 % ======== DATABASE =========
 
@@ -401,18 +318,19 @@ prop(wouldn_t, resp_aux, would).
 % T_Verb_tb is the verb "to be" produced in tag in tag_question
 % R_Verb_tb is the verb "to be" we want to output for recip
 % For example:
-% if the input is "i am swimming"
-% tag will be "'ain_t' i?"
-% recip should be "'are' you?"
+% if the input is "i am swimming" OR "you are swimming"
+% tag will be "'ain_t' i?" OR "aren_t you"
+% recip should be "'are' you?" OR "am i"
 % the relation mapping is built on all the possible input domain and output range
 prop(ain_t, resp_be, are).
 prop(isn_t, resp_be, are).
-prop(aren_t, resp_be, are).
+% prop(aren_t, resp_be, am).	 % ?????
+prop(aren_t, resp_be, are).	 % ??? One of these two versions depending on if the subject is 'i' or we
 prop(wasn_t, resp_be, were).
 prop(weren_t, resp_be, were).
 prop(am, resp_be, aren_t).
 prop(is, resp_be, aren_t).
-prop(are, resp_be, aren_t).
+prop(are, resp_be, aren_t).	
 prop(was, resp_be, weren_t).
 prop(were, resp_be, weren_t).
 

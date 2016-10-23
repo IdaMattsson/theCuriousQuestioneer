@@ -25,47 +25,54 @@
 
 
 % S is input sentence and Q is the returned question(s)
-% this version is good for keeping only the basic shape, no variable assignment. Use for final version
+% this version is good for keeping only the basic shape, no variable assignment. Use for final version, but not if already in string version
 %input(S) :- tag_question(S,Q1), write(Q1).
 
-% working version, expand according to number of avilable questions
-input(S, T) :- tag_question(S, T).
-input(S, R) :- recip_question(S, R).
+% working version, expand according to number of available questions
+% output is in string format
+input(S, T_O) :- tag_question(S, T_O).
+input(S, R_O) :- recip_question(S, R_O).
 
 /* Question Types */
 
-% tag question is true if Q1 is the sentence S with a tag question added at the end.
+
+% --- Tag question ---
+%tag question is true if Q1 is the sentence S with a tag question added at the end.
 
 % tag_question(S, Q1) :- tag(S, T1), atomics_to_string(S, " ", S1), string_concat(S1, T1, Q1).
-tag_question(S, Q1) :- tag(S, T), append(S, T, Q1).
+tag_question(S, T) :- tag(S, T1), formatting(S, T1, T).
 tag_question(S, Q1) :- \+ tag(S, _), error(Q1).
 
 error([the, curious, questioneer, is, confused]).
 
-
-
-% tag analyze the first two words in the sentence and produce the tag question.
-
+% tag(S, T) returns true if T is the corresponding tag to the sentence S
 % We assume the first word to be the subject and
 % the second word to be either an auxiliary verb or a verb.
-% NOTE: add the atomics_to_string!!! TODO
-tag([Sub, Aux, Verb|_], T1) :- check_aux_input(Sub, Aux, Verb), prop(Aux, inv_aux, IAux), append([,, IAux], [Sub,?], T1).
 
-tag([Sub, Verb|_], T1) :- check_verb_input(Sub, Verb, VT), prop(VT, vt_find_aux, IAux), append([,, IAux], [Sub,?], T1).
+% Input contains Subject, Auxiliary verb, Verb 
+tag([Sub, Aux, Verb|_], T1) :- check_aux_input(Sub, Aux, Verb), prop(Aux, inv_aux, IAux), append([IAux], [Sub], T1).
 
-tag([Sub, Verb_tb, Verb_ing|_], T1) :- check_verb_ing_input(Sub, Verb_tb, Verb_ing), prop(Verb_tb, inv_be, IVerb_tb), append([,, IVerb_tb], [Sub,?], T1).
+% Input contains Subject, Verb 
+tag([Sub, Verb|_], T1) :- check_verb_input(Sub, Verb, VT), prop(VT, vt_find_aux, IAux), append([IAux], [Sub], T1).
+
+% Input contains Subject, ToBe_Verb, Verb in -ing form
+tag([Sub, Verb_tb, Verb_ing|_], T1) :- check_verb_ing_input(Sub, Verb_tb, Verb_ing), prop(Verb_tb, inv_be, IVerb_tb), append([IVerb_tb], [Sub], T1).
 
 
-% Reciprocal Question is true if Q2 is the sentence s with a Reciprocal question attached at the end
-recip_question(S, R) :- recip(S, R1), append(S, R1, R).
+% --- Reciprocal question ---
+% Reciprocal Question is true if Q2 is the sentence s with a Reciprocal question attached at the end 
+recip_question(S, R) :- recip(S, R1), formatting(S, R1, R).
 
-% recip(S, Q) returns true if Q is the Reciprocal question to the input statement S 
+% recip(S, Q) returns true if R1 is the reciprocal question to the input statement S 
 
-recip([Sub, Aux, Verb|_], T1) :- tag([Sub, Aux, Verb|_], [_, T_Aux, T_Sub | _]), prop(T_Sub, resp_sub, R_Sub), prop(T_Aux, resp_aux, R_Aux), append([,, R_Aux], [R_Sub,?], T1).
+% Input contains Subject, Auxiliary verb, Verb 
+recip([Sub, Aux, Verb|_], R1) :- tag([Sub, Aux, Verb|_], [T_Aux, T_Sub | _]), prop(T_Sub, resp_sub, R_Sub), prop(T_Aux, resp_aux, R_Aux), append([R_Aux], [R_Sub], R1).
 
-recip([Sub, Verb|_], T1) :- check_verb_input(Sub, Verb, _), tag([Sub, Verb|_], [_, T_Aux, T_Sub|_]), prop(T_Sub, resp_sub, R_Sub), prop(T_Aux, resp_aux, R_Aux), append([,, R_Aux], [R_Sub,?], T1).
+% Input contains Subject, Verb 
+recip([Sub, Verb|_], R1) :- check_verb_input(Sub, Verb, _), tag([Sub, Verb|_], [T_Aux, T_Sub|_]), prop(T_Sub, resp_sub, R_Sub), prop(T_Aux, resp_aux, R_Aux), append([R_Aux], [R_Sub], R1).
 
-recip([Sub, Verb_tb, Verb_ing|_], T1) :- check_verb_ing_input(Sub, Verb_tb, Verb_ing), tag([Sub, Verb_tb, Verb_ing|_], [_, T_Verb_tb, T_Sub|_]), prop(T_Sub, resp_sub, R_Sub), prop(T_Verb_tb, resp_be, R_Verb_tb), append([,, R_Verb_tb], [R_Sub,?], T1).
+% Input contains Subject, ToBe_Verb, Verb in -ing form
+recip([Sub, Verb_tb, Verb_ing|_], R1) :- check_verb_ing_input(Sub, Verb_tb, Verb_ing), tag([Sub, Verb_tb, Verb_ing|_], [T_Verb_tb, T_Sub|_]), prop(T_Sub, resp_sub, R_Sub), prop(T_Verb_tb, resp_be, R_Verb_tb), append([R_Verb_tb], [R_Sub], R1).
 
 
 
@@ -78,6 +85,8 @@ check_verb_input(Sub, Verb, VT) :-  prop(Sub, subject, ST), prop(Verb, verb, VT)
 % grammar check functions return true if Sub is a subject, Verb_tb is a 'to be' verb and Verb is a verb_ing
 check_verb_ing_input(Sub, Verb_tb, Verb_ing) :-  prop(Sub, subject, ST), prop(Verb_tb, verb_tb, VT), prop(Verb_ing, verb_ing, true), sav_agree(ST, n, VT).
 
+% formatting(Sentence, Addition, Output) returns true if Output is the string of the form 'sentence S, addition A?'
+formatting(S, A, O) :- atomics_to_string(S, " ", S1), append([,], A, A1), atomics_to_string(A1, " ", A2), string_concat(S1, A2, I), string_concat(I, '?', O).
 
 /* Grammar */
 

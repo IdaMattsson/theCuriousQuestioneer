@@ -27,14 +27,16 @@
 % S is input sentence and Q is the returned question(s)
 % this version is good for keeping only the basic shape, no variable assignment. Use for final version, but not if already in string version
 %input(S) :- tag_question(S,Q1), write(Q1).
+generate(S, O) :- readln(S, A), input(A, O).
+% remove if not used!! TODO
 
 % working version, expand according to number of available questions
 % output is in string format
 input(S, T_O) :- tag_question(S, T_O).
 input(S, R_O) :- recip_question(S, R_O).
 
-/* Question Types */
 
+/* Question Types */
 
 % --- Tag question ---
 %tag question is true if Q1 is the sentence S with a tag question added at the end.

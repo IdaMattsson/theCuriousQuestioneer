@@ -72,14 +72,21 @@ error("The Curious Questioneer is confused.").
 
 /* Grammar */
 
-% sav_agree(ST, AT, VT) is true if the auxiliary verb agrees with the subject and the verb agrees with the aux (that the verb is a root verb)
+% sav_agree(ST, AT, VT) is true when the auxiliary verb agrees with the subject and the verb agrees with the auxiliary verb
 % if AT is n, there is no auxuliary verb in the input
-% for subject with verb only
-sav_agree(s_fs, n, root_v).         % subject_firstSingular maps to root verb
+% for subjects with verb only
+% s_fs is first person singular subject 	'I'
+% s_ss is second person singular subject 	'You'
+% s_ts is third person singular subject 	'He/She/It'
+% s_fp is first person plural subject 		'We'
+% s_sp is second person plural subject 		'You'
+% s_tp is third person plural subject 		'They'
+% root_v is a root verb, root_v_s is a root verb with an added -s, consider for example 'listen' and 'listens'
+sav_agree(s_fs, n, root_v).         
 sav_agree(s_fs, n, past).
 sav_agree(s_ss, n, root_v).
 sav_agree(s_ss, n, past).
-sav_agree(s_ts, n, root_v_s).       % subject_third singular maps to root verb with added s
+sav_agree(s_ts, n, root_v_s).      
 sav_agree(s_ts, n, past).
 sav_agree(s_fp, n, root_v).
 sav_agree(s_fp, n, past).
@@ -87,16 +94,30 @@ sav_agree(s_sp, n, root_v).
 sav_agree(s_sp, n, past).
 sav_agree(s_tp, n, root_v).
 sav_agree(s_tp, n, past).
-
+ 
 % for subject, aux, verb
+% true if the first part of the sentence is of form 'subject, auxiliary verb, verb (in root form)'
 sav_agree(s_fs, true, root_v).
 sav_agree(s_ss, true, root_v).
 sav_agree(s_sp, true, root_v).
-sav_agree(s_ts, a_ts, root_v).
+sav_agree(s_ts, true, root_v).
 sav_agree(s_fp, true, root_v).
 sav_agree(s_tp, true, root_v).
 
 % for subject, verb 'be'
+% No auxuliary verb
+% vb_fs_pr is verb_firstPersonSingular_presentTense 	'I am'
+% vb_fs_pa is verb_firstPersonSingular_pastTense		'I was'
+% vb_ss_pr is verb_secondPersonaSingular_presentTense	'You are'
+% vb_ss_pa is verb_secondPersonSingular_pastTense		'You were'
+% vb_ts_pr is verb_thirdPersonSingular_presentTense		'He/She/It is'
+% vb_ts_pa is verb_thirdPersonSingular_pastTense		'He/She/It was'
+% vb_fp_pr is verb_firstPersonPlural_presentTense		'We are'
+% vb_fp_pa is verb_firstPersonPlural_pastTense			'We were'
+% vb_sp_pr is verb_secondPersonPlural_presentTense		'You are'
+% vb_sp_pa is verb_secondPersonPlural_pastTense			'You were'
+% vb_tp_pr is verb_thirdPersonPlural_presentTense		'They are'
+% vb_tp_pa is verb_thirdPersonPlural_pastTense			'They were'
 sav_agree(s_fs, n, vb_fs_pr).
 sav_agree(s_fs, n, vb_fs_pa).
 sav_agree(s_ss, n, vb_ss_pr).
@@ -117,29 +138,27 @@ sav_agree(s_tp, n, vb_tp_pa).
 % Detemine the subjects and what kind of subjects (First+second or third person)
 % The form of the auxiliary verb does not change between first and second person, so they are treated as the same.
 
-% s_fs is first person singular subject
-% s_ss is second person singular subject
-% s_ts is third person singular subject of
-% s_fp is first person plural subject
-% s_sp is second person plural subject
-% s_tp is third person plural subject
+% s_fs is first person singular subject 	'I'
+% s_ss is second person singular subject 	'You'
+% s_ts is third person singular subject 	'He/She/It'
+% s_fp is first person plural subject 		'We'
+% s_sp is second person plural subject 		'You'
+% s_tp is third person plural subject 		'They'
 prop(i, subject, s_fs).           % I do
 prop(you, subject, s_ss).         % you do
 prop(he, subject, s_ts).          % he does
 prop(she, subject, s_ts).         % she does
 prop(it, subject, s_ts).          % it does
 prop(we, subject, s_fp).          % we do
-%prop(you, subject, s_sp).         % you do 	CHANGED
 prop(they, subject, s_tp).        % they do
 
 
-% Detemine the verbs and what kind of verbs (First+second or third person or past tense)
+% A database of verbs and their categorization
 % root_v means the root of the verb
 prop(like, verb, root_v).
 prop(make, verb, root_v).
 prop(love, verb, root_v).
 prop(dance, verb, root_v).
-prop(be, verb, root_v).
 
 % root_v_s is root verb plus "s" (for third person sigular subject)
 prop(likes, verb, root_v_s).
@@ -264,7 +283,7 @@ prop(were, inv_be, weren_t).
 prop(weren_t, inv_be, were).
 
 
-% Response subject according to the mapping relation from tag to recip
+% Response subject according to the mapping relation from tag to reciprocal question
 % prop(Tag_Sub, response_sub, Reciprocal_Sub)
 % Tag_Sub is the subject produced in tag in tag_question
 % Reciprocal_Sub is the subject we want to output for recip
@@ -287,8 +306,8 @@ prop(they, resp_sub, you).
 % Tag_Aux is the auxiliary verb produced in tag in tag_question
 % Reciprocal_Aux is the auxiliary verb we want to output for recip
 % For example:
-% if the input is "i like apples"
-% tag will be "'don_t' i?"
+% if the input is "i like apples"	
+% tag will be "'don_t' i?"			
 % recip should be "'do' you?"
 % the relation mapping is built on all the possible input domain and output range
 prop(don_t, resp_aux, do).
@@ -299,6 +318,8 @@ prop(does, resp_aux, don_t).
 prop(did, resp_aux, didn_t).
 prop(can, resp_aux, can_t).
 prop(can_t, resp_aux, can).
+prop(couldn_t, resp_aux, could).
+prop(could, resp_aux, couldn_t).
 prop(have, resp_aux, haven_t).
 prop(haven_t, resp_aux, have).
 prop(had, resp_aux, hadn_t).
@@ -315,14 +336,13 @@ prop(wouldn_t, resp_aux, would).
 % T_Verb_tb is the verb "to be" produced in tag in tag_question
 % R_Verb_tb is the verb "to be" we want to output for recip
 % For example:
-% if the input is "i am swimming" OR "you are swimming"
-% tag will be "'ain_t' i?" OR "aren_t you"
-% recip should be "'are' you?" OR "am i"
+% if the input is "i am making buns"
+% tag will be "'ain_t' i?"
+% recip should be "'are' you?"  
 % the relation mapping is built on all the possible input domain and output range
 prop(ain_t, resp_be, are).
 prop(isn_t, resp_be, are).
-% prop(aren_t, resp_be, am).	 % ?????
-prop(aren_t, resp_be, are).	 % ??? One of these two versions depending on if the subject is 'i' or we
+prop(aren_t, resp_be, are).	
 prop(wasn_t, resp_be, were).
 prop(weren_t, resp_be, were).
 prop(am, resp_be, aren_t).

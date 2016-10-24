@@ -55,13 +55,13 @@ recip([Sub, Verb|_], R1) :- check_verb_input(Sub, Verb, _), tag([Sub, Verb|_], [
 recip([Sub, Verb_tb, Verb_ing|_], R1) :- check_verb_ing_input(Sub, Verb_tb, Verb_ing), tag([Sub, Verb_tb, Verb_ing|_], [T_Verb_tb, T_Sub|_]), prop(T_Sub, resp_sub, R_Sub), prop(T_Verb_tb, resp_be, R_Verb_tb), append([R_Verb_tb], [R_Sub], R1).
 
 
-% grammar check functions return true if Sub is a subject, Aux is an auxiliary verb and Verb is a verb
+% grammar check functions return true if Sub is a subject, Aux is an auxiliary verb and Verb is a verb, and their tenses agree.
 check_aux_input(Sub, Aux, Verb) :-  prop(Sub, subject, ST), prop(Aux, aux, AT), prop(Verb, verb, VT), sav_agree(ST, AT, VT).
 
-% grammar check functions return true if Sub is a subject and Verb is a verb
+% grammar check functions return true if Sub is a subject and Verb is a verb and their tenses agree
 check_verb_input(Sub, Verb, VT) :-  prop(Sub, subject, ST), prop(Verb, verb, VT), sav_agree(ST, n, VT).
 
-% grammar check functions return true if Sub is a subject, Verb_tb is a 'to be' verb and Verb is a verb_ing
+% grammar check functions return true if Sub is a subject, Verb_tb is a 'to be' verb and Verb is a verb_ing and their tenses agree
 check_verb_ing_input(Sub, Verb_tb, Verb_ing) :-  prop(Sub, subject, ST), prop(Verb_tb, verb_tb, VT), prop(Verb_ing, verb_ing, true), sav_agree(ST, n, VT).
 
 % formatting(Sentence, Addition, Output) returns true if Output is the string of the form 'sentence S, addition A?'

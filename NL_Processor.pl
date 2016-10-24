@@ -1,10 +1,15 @@
+% CPSC 312 Project 1 - the Curious Questioneer
+
+% Ida Mattsson, x1z8 and Justin (Yi Ting) Song, m6v0b
+% WIKI page: http://wiki.ubc.ca/Course:CPSC312-2016-Project1-TheCuriousQuestioneer
+
+
 % The Curious Questioneer is based off of the natural language processor given in the class example code. 
 % These parts are under the Copyright (c) of David Poole and Alan Mackworth 2010. This program
 % is released under GPL, version 3 or later; see http://www.gnu.org/licenses/gpl.html
 
-% Note: the pronoun 'you' is interpreted both as singular second person 'you' and plural third person 'you'.
-%REMOVE THE ABOVE COMMENT if we remove the plural 'you'
 
+% ------
 
 % generate(Questions) returns true if we read a valid input from the user, and Q is the question(s) returned from input(Sentence, Question).
 generate(Q) :- readln(S), input(S, Q).
